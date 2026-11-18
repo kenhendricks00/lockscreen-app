@@ -33,10 +33,10 @@ export function LockScreen() {
   const insets = useSafeAreaInsets();
   const top = Math.max(insets.top, 47);
   const bottom = Math.max(insets.bottom, 34);
-  const { settings } = useSettings();
+  const { settings, pushover } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const { notes, dismiss } = usePushover(settings.demoNotifications);
+  const { notes, dismiss } = usePushover(pushover, settings.demoNotifications);
   const note = notes[0];
   const dismissNote = () => note && dismiss(note);
   const noteAt = (spot: Placement) => (settings.placement === spot ? note : undefined);

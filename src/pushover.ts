@@ -1,5 +1,6 @@
 // Minimal unofficial Pushover Open Client: https://pushover.net/api/client
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import { LayoutAnimation } from 'react-native';
 
@@ -11,14 +12,13 @@ export type PushNote = {
   receipt?: string; // set on unacknowledged emergency-priority messages
 };
 
+export type PushoverAccount = { secret: string; deviceId: string };
+
 const API = 'https://api.pushover.net/1';
 const SOCKET_URL = 'wss://client.pushover.net/push';
-const STORAGE_KEY = 'pushover-notes';
+const NOTES_KEY = 'pushover-notes';
+const ACCOUNT_KEY = 'pushover-account';
 const KEEP = 20;
-
-const secret = process.env.EXPO_PUBLIC_PUSHOVER_SECRET ?? '';
-const deviceId = process.env.EXPO_PUBLIC_PUSHOVER_DEVICE_ID ?? '';
-const configured = Boolean(secret && deviceId);
 const headers = { 'User-Agent': 'LockScreen/1.0 (unofficial Pushover Open Client)' };
 
 const minutesAgo = (minutes: number) => Math.floor(Date.now() / 1000) - minutes * 60;
@@ -28,15 +28,61 @@ const SAMPLES: PushNote[] = [
   { id: 's3', title: 'Reminder', message: 'Dentist appointment tomorrow at 10.', date: minutesAgo(130) },
 ];
 
-function post(path: string, params: Record<string, string>) {
+async function post(path: string, params: Record<string, string>) {
   const body = Object.entries(params)
     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
     .join('&');
-  return fetch(API + path, {
+  const res = await fetch(API + path, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
   });
+  return { status: res.status, json: await res.json() };
+}
+
+type ApiErrors = { errors?: string[] | Record<string, string[]> };
+
+function errorText({ errors }: ApiErrors) {
+  if (!errors) return 'Pushover sign-in failed.';
+  if (Array.isArray(errors)) return errors.join(' ');
+  return Object.entries(errors)
+    .map(([field, messages]) => `${field} ${messages.join(', ')}`)
+    .join('. ');
+}
+
+// The secret lives in the iPhone Keychain, never in the code or the build.
+// (The Keychain doesn't exist on web, so the web preview just won't remember it.)
+export const loadAccount = (): Promise<PushoverAccount | null> =>
+  SecureStore.getItemAsync(ACCOUNT_KEY)
+    .then((json) => (json ? JSON.parse(json) : null))
+    .catch(() => null);
+
+export const saveAccount = (account: PushoverAccount | null) =>
+  (account
+    ? SecureStore.setItemAsync(ACCOUNT_KEY, JSON.stringify(account))
+    : SecureStore.deleteItemAsync(ACCOUNT_KEY)
+  ).catch(() => {});
+
+/**
+ * Logs in and registers this phone as a Pushover device. The password is only
+ * sent to Pushover; just the returned secret and device id are kept.
+ * Returns 'needs-2fa' when the account asks for a two-factor code.
+ */
+export async function signIn(email: string, password: string, twofa: string) {
+  const params: Record<string, string> = { email, password };
+  if (twofa) params.twofa = twofa;
+
+  const login = await post('/users/login.json', params);
+  if (login.status === 412) return 'needs-2fa' as const;
+  if (login.json.status !== 1) throw new Error(errorText(login.json));
+
+  // Device names must be unique per account, and a reinstall can't reuse the
+  // old device (its secret is gone), so add a short random suffix.
+  const name = `lockscreen-${Math.random().toString(36).slice(2, 6)}`;
+  const device = await post('/devices.json', { secret: login.json.secret, name, os: 'O' });
+  if (device.json.status !== 1) throw new Error(errorText(device.json));
+
+  return { secret: login.json.secret as string, deviceId: device.json.id as string };
 }
 
 type RawMessage = {
@@ -60,7 +106,7 @@ const toNote = (m: RawMessage): PushNote => ({
 });
 
 /** Downloads pending messages (newest first), then deletes them from Pushover's servers. */
-async function sync(): Promise<PushNote[]> {
+async function sync({ secret, deviceId }: PushoverAccount): Promise<PushNote[]> {
   const res = await fetch(`${API}/messages.json?secret=${secret}&device_id=${deviceId}`, { headers });
   const { messages = [] }: { messages?: RawMessage[] } = await res.json();
   if (messages.length === 0) return [];
@@ -71,30 +117,30 @@ async function sync(): Promise<PushNote[]> {
 }
 
 /** Live notifications over Pushover's WebSocket, saved on the phone until dismissed. */
-export function usePushover(demo: boolean) {
+export function usePushover(account: PushoverAccount | null, demo: boolean) {
   const [notes, setNotes] = useState<PushNote[]>([]);
   const [samples, setSamples] = useState(SAMPLES);
-  const [restored, setRestored] = useState(!configured);
+  const [restored, setRestored] = useState(false);
 
   useEffect(() => {
-    if (!configured) return;
-    AsyncStorage.getItem(STORAGE_KEY)
+    AsyncStorage.getItem(NOTES_KEY)
       .then((json) => json && setNotes(JSON.parse(json)))
+      .catch(() => {})
       .finally(() => setRestored(true));
   }, []);
 
   useEffect(() => {
-    if (configured && restored) AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+    if (restored) AsyncStorage.setItem(NOTES_KEY, JSON.stringify(notes)).catch(() => {});
   }, [notes, restored]);
 
   useEffect(() => {
-    if (!configured || !restored) return;
+    if (!account || !restored) return;
     let socket: WebSocket;
     let retry: ReturnType<typeof setTimeout>;
     let stopped = false;
 
     const pull = () =>
-      sync()
+      sync(account)
         .then((fresh) => fresh.length && setNotes((old) => [...fresh, ...old].slice(0, KEEP)))
         .catch(() => {});
 
@@ -102,7 +148,7 @@ export function usePushover(demo: boolean) {
       socket = new WebSocket(SOCKET_URL);
       socket.binaryType = 'arraybuffer';
       socket.onopen = () => {
-        socket.send(`login:${deviceId}:${secret}\n`);
+        socket.send(`login:${account.deviceId}:${account.secret}\n`);
         pull();
       };
       socket.onmessage = ({ data }) => {
@@ -123,15 +169,18 @@ export function usePushover(demo: boolean) {
       clearTimeout(retry);
       socket.close();
     };
-  }, [restored]);
+  }, [account, restored]);
 
   const dismiss = (note: PushNote) => {
-    if (note.receipt) post(`/receipts/${note.receipt}/acknowledge.json`, { secret }).catch(() => {});
+    if (note.receipt && account) {
+      post(`/receipts/${note.receipt}/acknowledge.json`, { secret: account.secret }).catch(() => {});
+    }
     LayoutAnimation.easeInEaseOut();
     const without = (list: PushNote[]) => list.filter((n) => n.id !== note.id);
     setNotes(without);
     setSamples(without);
   };
 
-  return { notes: demo ? samples : notes, dismiss };
+  if (demo) return { notes: samples, dismiss };
+  return { notes: account ? notes : [], dismiss };
 }

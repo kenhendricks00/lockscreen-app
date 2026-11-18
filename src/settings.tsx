@@ -5,22 +5,40 @@ import { createContext, type ReactNode, useContext, useEffect, useState } from '
 import { Platform } from 'react-native';
 
 import { defaults, type Settings } from './config';
+import { loadAccount, type PushoverAccount, saveAccount } from './pushover';
 
 const STORAGE_KEY = 'settings';
 
-type SettingsContextValue = { settings: Settings; update: (changes: Partial<Settings>) => void };
-const SettingsContext = createContext<SettingsContextValue>({ settings: defaults, update: () => {} });
+type SettingsContextValue = {
+  settings: Settings;
+  update: (changes: Partial<Settings>) => void;
+  pushover: PushoverAccount | null;
+  setPushover: (account: PushoverAccount | null) => void;
+};
+const SettingsContext = createContext<SettingsContextValue>({
+  settings: defaults,
+  update: () => {},
+  pushover: null,
+  setPushover: () => {},
+});
 
 export const useSettings = () => useContext(SettingsContext);
 
-/** Loads saved settings (falling back to the defaults) and saves every change. */
+/**
+ * Loads saved settings (falling back to the defaults) and the Pushover account
+ * from the Keychain, and saves every change.
+ */
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings | null>(null);
+  const [pushover, setPushoverState] = useState<PushoverAccount | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY)
-      .then((json) => setSettings({ ...defaults, ...(json ? JSON.parse(json) : {}) }))
-      .catch(() => setSettings(defaults));
+    Promise.all([AsyncStorage.getItem(STORAGE_KEY).catch(() => null), loadAccount()]).then(
+      ([json, account]) => {
+        setPushoverState(account);
+        setSettings({ ...defaults, ...(json ? JSON.parse(json) : {}) });
+      },
+    );
   }, []);
 
   useEffect(() => {
@@ -30,7 +48,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   if (!settings) return null;
 
   const update = (changes: Partial<Settings>) => setSettings((prev) => ({ ...prev!, ...changes }));
-  return <SettingsContext.Provider value={{ settings, update }}>{children}</SettingsContext.Provider>;
+  const setPushover = (account: PushoverAccount | null) => {
+    setPushoverState(account);
+    saveAccount(account);
+  };
+
+  return (
+    <SettingsContext.Provider value={{ settings, update, pushover, setPushover }}>
+      {children}
+    </SettingsContext.Provider>
+  );
 }
 
 /**
