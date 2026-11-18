@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AppState } from 'react-native';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const minuteOf = (date: Date) => Math.floor(date.getTime() / 60_000);
 
@@ -37,7 +38,8 @@ export function formatClock(date: Date) {
   return `${hours}:${minutes}`;
 }
 
-/** "Wed 18" */
-export function formatDay(date: Date) {
-  return `${DAYS[date.getDay()]} ${date.getDate()}`;
+/** "Wed 18", or "Wed Nov 18" when the line has room (nothing else next to it). */
+export function formatDay(date: Date, withMonth = false) {
+  const month = withMonth ? ` ${MONTHS[date.getMonth()]}` : '';
+  return `${DAYS[date.getDay()]}${month} ${date.getDate()}`;
 }

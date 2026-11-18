@@ -52,7 +52,8 @@ Save any file and the app on the phone reloads by itself.
 Press and hold anywhere on the lock screen to open **Settings**. There you can:
 
 - **Choose a wallpaper** from your Photos. It's copied into the app's own storage. **Use default** goes back to the built-in gradient.
-- Set the **next event** (time and title). Leave both blank to hide it.
+- Pick a **clock font**: Serif, Bold, Rounded, Thin or Narrow. Bold and Thin use San Francisco, the iPhone's own lock screen font.
+- Set the **next event** (time and title). Leave both blank to hide it, and the date then shows the month too ("Wed Nov 18").
 - Set the **verse** reference and text.
 - Set the **weather city**. Type a name and tap **Set**; it's looked up with Open-Meteo's free geocoder.
 - Pick where **Pushover notifications** show, and turn sample notifications on to preview them.

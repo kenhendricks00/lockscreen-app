@@ -1,3 +1,5 @@
+import type { ClockFont } from './fonts';
+
 // Defaults for a fresh install. Everything here can be changed on the phone:
 // long-press the lock screen to open Settings. Changes are saved on the device
 // only, so nothing personal ever needs to go in this file.
@@ -10,6 +12,7 @@ export type Placement = 'edge' | 'weather' | 'event';
 
 export const defaults = {
   wallpaper: null as string | null, // a photo picked in Settings; null uses assets/wallpaper.jpg
+  clockFont: 'serif' as ClockFont,
   eventTime: '3:30PM',
   eventTitle: 'Study group in the library',
   verseReference: 'Isaiah 40:8 NLT',

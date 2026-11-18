@@ -1,19 +1,26 @@
 import { useWindowDimensions } from 'react-native';
 import Svg, { Defs, G, LinearGradient, Stop, Text } from 'react-native-svg';
 
-import { clockFont } from '../fonts';
+import { clockFonts } from '../fonts';
+import { useSettings } from '../settings';
 import { formatClock } from '../time';
 
-const FONT_SIZE = 126;
 const HEIGHT = 112;
 const BASELINE = 101;
 
 /** The big glassy clock: a white-to-periwinkle gradient over a bright top rim and a soft bottom edge. */
 export function Clock({ now }: { now: Date }) {
   const { width } = useWindowDimensions();
+  const font = clockFonts[useSettings().settings.clockFont];
   const time = formatClock(now);
   const cx = width / 2;
-  const text = { x: cx, fontFamily: clockFont, fontSize: FONT_SIZE, textAnchor: 'middle' as const };
+  const text = {
+    x: cx,
+    fontFamily: font.family,
+    fontWeight: font.weight,
+    fontSize: font.size,
+    textAnchor: 'middle' as const,
+  };
 
   return (
     <Svg width={width} height={HEIGHT}>

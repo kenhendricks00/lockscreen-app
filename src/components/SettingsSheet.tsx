@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Placement } from '../config';
-import { sans } from '../fonts';
+import { type ClockFont, clockFonts, sans } from '../fonts';
 import { deleteWallpaper, pickWallpaper, useSettings } from '../settings';
 import { findCity } from '../weather';
 import { PushoverSignIn } from './PushoverSignIn';
@@ -13,6 +13,11 @@ const PLACEMENTS: { value: Placement; label: string }[] = [
   { value: 'weather', label: 'Weather spot' },
   { value: 'event', label: 'Event line' },
 ];
+
+const CLOCK_FONTS = (Object.keys(clockFonts) as ClockFont[]).map((value) => ({
+  value,
+  label: clockFonts[value].label,
+}));
 
 const DIM_DELAYS = [
   { value: 15, label: '15 sec' },
@@ -64,6 +69,14 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               <Button label="Choose photo" onPress={chooseWallpaper} />
               {settings.wallpaper && <Button label="Use default" onPress={resetWallpaper} />}
             </View>
+          </Section>
+
+          <Section title="Clock font">
+            <Segments
+              options={CLOCK_FONTS}
+              value={settings.clockFont}
+              onChange={(clockFont) => update({ clockFont })}
+            />
           </Section>
 
           <Section title="Next event (leave blank to hide)">

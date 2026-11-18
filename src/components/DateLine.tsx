@@ -19,7 +19,7 @@ export function DateLine({ now, note, onNotePress }: Props) {
 
   return (
     <View style={styles.row}>
-      <Text style={[styles.text, styles.day]}>{formatDay(now)}</Text>
+      <Text style={[styles.text, styles.day]}>{formatDay(now, !note && !hasEvent)}</Text>
       {(note || hasEvent) && (
         <MaterialCommunityIcons
           name={note ? 'bell' : 'calendar-month'}
