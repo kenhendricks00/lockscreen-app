@@ -1,4 +1,4 @@
-import { ImageBackground, Platform, StyleSheet, View } from 'react-native';
+import { Image, Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
@@ -27,7 +27,8 @@ export function LockScreen() {
   const aboveButtons = bottom + BUTTONS_OFFSET + BUTTON_SIZE + 16;
 
   return (
-    <ImageBackground source={wallpaper} resizeMode="cover" style={styles.screen}>
+    <View style={styles.screen}>
+      <Image source={wallpaper} resizeMode="cover" style={styles.wallpaper} />
       <View style={{ paddingTop: top + 57 }}>
         <DateLine now={now} />
         <Clock now={now} />
@@ -47,12 +48,13 @@ export function LockScreen() {
 
       {/* iPhones draw the real home indicator on top of every app. */}
       {Platform.OS !== 'ios' && <View style={styles.homeIndicator} />}
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: 'black' },
+  wallpaper: { position: 'absolute', width: '100%', height: '100%' },
   widgets: {
     width: 348,
     alignSelf: 'center',

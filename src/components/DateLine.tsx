@@ -5,12 +5,12 @@ import { nextEvent } from '../config';
 import { sans } from '../fonts';
 import { formatDay } from '../time';
 
-const EVENT_COLOR = 'rgba(232, 244, 255, 0.92)';
+const EVENT_COLOR = '#EEF6FF';
 
 export function DateLine({ now }: { now: Date }) {
   return (
     <View style={styles.row}>
-      <Text style={styles.text}>{formatDay(now)}</Text>
+      <Text style={[styles.text, styles.day]}>{formatDay(now)}</Text>
       <MaterialCommunityIcons name="calendar-month" size={20} color={EVENT_COLOR} style={styles.icon} />
       <Text style={[styles.text, styles.event]} numberOfLines={1}>
         {nextEvent.time}
@@ -31,8 +31,9 @@ const styles = StyleSheet.create({
   text: {
     ...sans('500'),
     fontSize: 21.5,
-    color: 'rgba(255, 255, 255, 0.92)',
+    color: 'white',
   },
+  day: { flexShrink: 0 },
   icon: { marginLeft: 14, marginRight: 7 },
   event: { flexShrink: 1, color: EVENT_COLOR },
   period: { fontSize: 17 },

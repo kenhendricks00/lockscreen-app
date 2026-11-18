@@ -8,7 +8,7 @@ const FONT_SIZE = 126;
 const HEIGHT = 112;
 const BASELINE = 101;
 
-/** The big glassy clock: a white-to-periwinkle gradient with a bright rim and a soft bottom edge. */
+/** The big glassy clock: a white-to-periwinkle gradient over a bright top rim and a soft bottom edge. */
 export function Clock({ now }: { now: Date }) {
   const { width } = useWindowDimensions();
   const time = formatClock(now);
@@ -33,10 +33,13 @@ export function Clock({ now }: { now: Date }) {
         </LinearGradient>
       </Defs>
       <G>
-        <Text {...text} y={BASELINE + 1.5} fill="rgba(25, 35, 110, 0.35)">
+        <Text {...text} y={BASELINE - 1} fill="rgba(255, 255, 255, 0.7)">
           {time}
         </Text>
-        <Text {...text} y={BASELINE} fill="url(#glass)" stroke="rgba(255, 255, 255, 0.55)" strokeWidth={0.8}>
+        <Text {...text} y={BASELINE + 1.5} fill="rgba(25, 35, 110, 0.4)">
+          {time}
+        </Text>
+        <Text {...text} y={BASELINE} fill="url(#glass)">
           {time}
         </Text>
       </G>

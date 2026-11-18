@@ -33,5 +33,5 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.92)',
   },
   temp: { ...sans('600'), color: 'white' },
-  range: { color: 'rgba(255, 255, 255, 0.72)' },
+  range: { color: 'rgba(255, 255, 255, 0.8)' },
 });
