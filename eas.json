@@ -5,7 +5,6 @@
   },
   "build": {
     "sideload": {
-      "environment": "production",
       "ios": {
         "withoutCredentials": true,
         "config": "unsigned-ios.yml"

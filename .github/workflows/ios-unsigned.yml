@@ -28,10 +28,6 @@ jobs:
 
       - name: Build unsigned .ipa
         run: bash scripts/build-unsigned-ipa.sh
-        env:
-          # Optional: only needed for Pushover notifications (see README).
-          EXPO_PUBLIC_PUSHOVER_SECRET: ${{ secrets.PUSHOVER_SECRET }}
-          EXPO_PUBLIC_PUSHOVER_DEVICE_ID: ${{ secrets.PUSHOVER_DEVICE_ID }}
 
       - uses: actions/upload-artifact@v4
         with:

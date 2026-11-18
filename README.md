@@ -85,25 +85,20 @@ When nothing is pending, the spot looks normal: there's no edge text, and the we
 
 To preview a spot before setting up Pushover, turn on **Show sample notifications**. That shows three sample notifications.
 
-**Connect your account** (one time):
+**Connect your account** in Settings, under *Pushover notifications*:
 
-```sh
-node scripts/pushover-setup.mjs
-```
+1. Enter your Pushover email and password, and tap **Connect**.
+2. If your account uses two-factor sign-in, a code field appears. Enter the code and tap **Connect** again.
 
-The script does three things:
-
-1. It asks for your Pushover email, password and, if you use one, your 2FA code.
-2. It registers a device called `lockscreen`.
-3. It writes the device's secret to `.env.local`.
-
-Your password isn't stored anywhere. Restart Expo afterwards with `npx expo start --clear`.
+The app registers itself as a new Pushover device named `lockscreen-` plus four random characters. **Disconnect** forgets it.
 
 Things to know:
 
+- **Your password is never stored.** It's sent only to Pushover, once, to sign in. The app keeps only the device key Pushover returns, in the iPhone Keychain. Nothing secret is in the code or in the built .ipa, so the repo and the builds are safe to share.
 - **Tap a notification to dismiss it.** Notifications are kept on the phone until you dismiss them, because the app deletes them from Pushover's servers after downloading them, as the Open Client API asks.
+- **Deleting the app forgets the sign-in.** After a reinstall, connect again; it registers a fresh device. You can remove old devices at <https://pushover.net>.
 - **Pushover licensing:** Pushover counts an Open Client device as a *desktop* device. After 30 days you need the one-time Pushover for Desktop license.
-- **Keep `.env.local` private.** It's git-ignored. Its values end up inside the built app, so don't share your .ipa or publish a web build that was made with them.
+- **On the web preview** the sign-in isn't remembered, because there's no Keychain.
 
 ---
 
@@ -123,14 +118,7 @@ The build logic for both routes lives in `scripts/build-unsigned-ipa.sh`.
    npx eas-cli init
    ```
 
-3. *(Pushover only)* Store your secret with EAS. Copy the values from `.env.local`:
-
-   ```sh
-   npx eas-cli env:create --environment production --visibility sensitive --name EXPO_PUBLIC_PUSHOVER_SECRET --value <secret>
-   npx eas-cli env:create --environment production --visibility sensitive --name EXPO_PUBLIC_PUSHOVER_DEVICE_ID --value <device id>
-   ```
-
-4. Start the build:
+3. Start the build:
 
    ```sh
    npx eas-cli build --platform ios --profile sideload
@@ -138,14 +126,13 @@ The build logic for both routes lives in `scripts/build-unsigned-ipa.sh`.
 
    The `sideload` profile in `eas.json` skips Apple credentials. It runs the custom steps in `.eas/build/unsigned-ios.yml`.
 
-5. Free builds wait in a queue, which can take a while. When the build finishes, open its page on expo.dev and download **LockScreen-unsigned.ipa**. The free plan includes a limited number of iOS builds per month; see <https://expo.dev/pricing>.
+4. Free builds wait in a queue, which can take a while. When the build finishes, open its page on expo.dev and download **LockScreen-unsigned.ipa**. The free plan includes a limited number of iOS builds per month; see <https://expo.dev/pricing>.
 
 ### Option B: GitHub Actions (GitHub's macOS machines)
 
-1. Create a repository on GitHub and push this project to it. A public repo is fine: the code contains nothing personal. But if you'll add Pushover secrets, make it **private**, because anyone who can see the repo can download the built app, and the secrets are inside it.
-2. *(Pushover only)* In the repo, go to **Settings → Secrets and variables → Actions**. Add two secrets: `PUSHOVER_SECRET` and `PUSHOVER_DEVICE_ID`.
-3. Open the **Actions** tab, choose **Unsigned iOS build** and click **Run workflow**. It takes about 15–30 minutes.
-4. Open the finished run and download **LockScreen-unsigned-ipa** under *Artifacts*. Unzip it to get the .ipa.
+1. Create a repository on GitHub and push this project to it. A public repo is fine: the code and the builds contain nothing personal or secret.
+2. Open the **Actions** tab, choose **Unsigned iOS build** and click **Run workflow**. It takes about 15–30 minutes.
+3. Open the finished run and download **LockScreen-unsigned-ipa** under *Artifacts*. Unzip it to get the .ipa.
 
 Public repos get macOS build minutes for free. Private repos use your free monthly Actions minutes, and macOS minutes count 10× there.
 
@@ -181,13 +168,12 @@ SideStore is a fork of AltStore that refreshes apps on the phone itself, using a
 App.tsx                      loads fonts, hides the status bar
 src/LockScreen.tsx           layout, positioned from the safe area insets
 src/config.ts                defaults for a fresh install
-src/settings.tsx             saved settings + wallpaper picker
+src/settings.tsx             saved settings, Pushover account, wallpaper picker
 src/time.ts                  live clock and date (updates on the minute and on wake)
 src/weather.ts               Open-Meteo forecast with an offline fallback
-src/pushover.ts              tiny Pushover Open Client (WebSocket + REST)
+src/pushover.ts              tiny Pushover Open Client: sign-in, WebSocket, REST
 src/components/              clock, date line, widgets, buttons, notifications, settings
 scripts/make_wallpaper.py    erases the overlays from a lock screen screenshot
-scripts/pushover-setup.mjs   one-time Pushover login + device registration
 scripts/build-unsigned-ipa.sh  unsigned .ipa build used by EAS and GitHub Actions
 ```
 
