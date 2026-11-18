@@ -6,6 +6,7 @@ An iOS-style lock screen as an Expo (React Native + TypeScript) app:
 - the date and next calendar event
 - a big live glassy clock
 - live weather for your city and a Bible verse widget
+- a status bar with live battery and Wi-Fi
 - flashlight and camera buttons
 - Pushover notifications, shown up the left edge, in the weather widget's spot, or in the top line
 
@@ -55,6 +56,7 @@ Press and hold anywhere on the lock screen to open **Settings**. There you can:
 - Set the **verse** reference and text.
 - Set the **weather city**. Type a name and tap **Set**; it's looked up with Open-Meteo's free geocoder.
 - Pick where **Pushover notifications** show, and turn sample notifications on to preview them.
+- Show or hide the **status bar** along the top, and type your **carrier name** for it. Battery and Wi-Fi are live. iOS doesn't let apps read the carrier name or signal strength, so you type the carrier yourself and the signal bars always show full.
 - Turn **Keep screen awake** on or off. It's on by default and stops the phone dimming and auto-locking while the app is open. It's best used on a charger; iPhones with OLED screens can get burn-in if one static image shows for hours every day.
 
 Settings are saved on the phone only, never in the code. The defaults for a fresh install are in `src/config.ts`.

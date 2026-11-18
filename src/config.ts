@@ -20,6 +20,8 @@ export const defaults = {
   placement: 'edge' as Placement,
   demoNotifications: false, // sample notifications, handy for picking a placement
   keepAwake: true, // stop the screen dimming and auto-locking while the app is open
+  statusBar: true, // carrier, signal, Wi-Fi and battery along the top
+  carrier: '', // iOS doesn't tell apps the carrier name, so type it in Settings
 };
 
 export type Settings = typeof defaults;

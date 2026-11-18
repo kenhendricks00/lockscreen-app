@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
+import { LockStatusBar } from './components/LockStatusBar';
 import { EdgeNote, NoteWidget } from './components/Notifications';
 import { CameraButton, FlashlightButton } from './components/QuickButtons';
 import { SettingsSheet } from './components/SettingsSheet';
@@ -50,6 +51,7 @@ export function LockScreen() {
       {/* Long-press anywhere opens Settings, like customizing the real lock screen. */}
       <Pressable style={styles.screen} onLongPress={() => setSettingsOpen(true)} delayLongPress={600}>
         <Image source={wallpaper} resizeMode="cover" style={styles.wallpaper} />
+        {settings.statusBar && <LockStatusBar top={top} carrier={settings.carrier} />}
         <View style={{ paddingTop: top + 57 }}>
           <DateLine now={now} note={noteAt('event')} onNotePress={dismissNote} />
           <Clock now={now} />

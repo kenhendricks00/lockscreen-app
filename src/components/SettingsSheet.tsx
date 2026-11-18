@@ -134,6 +134,18 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
 
           <Section title="Display">
             <Toggle
+              label="Show status bar"
+              value={settings.statusBar}
+              onChange={(statusBar) => update({ statusBar })}
+            />
+            {settings.statusBar && (
+              <Field
+                placeholder="Carrier name, e.g. T-Mobile"
+                value={settings.carrier}
+                onChangeText={(carrier) => update({ carrier })}
+              />
+            )}
+            <Toggle
               label="Keep screen awake"
               value={settings.keepAwake}
               onChange={(keepAwake) => update({ keepAwake })}
