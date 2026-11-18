@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
+import { CameraButton, FlashlightButton } from './components/QuickButtons';
 import { VerseWidget } from './components/VerseWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import { useNow } from './time';
@@ -17,6 +18,7 @@ export function LockScreen() {
   const now = useNow();
   const insets = useSafeAreaInsets();
   const top = Math.max(insets.top, 47);
+  const bottom = Math.max(insets.bottom, 34);
 
   return (
     <ImageBackground source={wallpaper} resizeMode="cover" style={styles.screen}>
@@ -27,6 +29,11 @@ export function LockScreen() {
           <WeatherWidget />
           <VerseWidget />
         </View>
+      </View>
+
+      <View style={[styles.buttons, { bottom: bottom + 24 }]}>
+        <FlashlightButton />
+        <CameraButton />
       </View>
 
       {/* iPhones draw the real home indicator on top of every app. */}
@@ -43,6 +50,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 8,
+  },
+  buttons: {
+    position: 'absolute',
+    left: 53,
+    right: 53,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   homeIndicator: {
     position: 'absolute',
