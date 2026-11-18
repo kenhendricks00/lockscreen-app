@@ -40,5 +40,5 @@ yarn-error.*
 /ios
 /android
 
-# reference screenshot (large, local only)
+# personal files (your screenshots and photos), never committed
 reference/

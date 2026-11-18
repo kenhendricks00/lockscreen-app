@@ -1,12 +1,17 @@
-"""Build assets/wallpaper.jpg from the reference lock screen screenshot.
+"""Turn an iPhone lock screen screenshot back into a plain wallpaper.
 
-The top of the photo is soft bokeh, so the status bar, date line, clock and
-widgets are filled by inpainting a downscaled copy (smooth fill), then adding
-back film grain so the patch doesn't look plastic. The bottom buttons and home
-bar sit on busy texture; they're inpainted at full size and end up hidden under
-the app's own buttons anyway.
+Removes the status bar, date line, clock, widgets, buttons and home bar from a
+1284x2778 screenshot (iPhone 12-14 Pro Max / 14 Plus size, with the overlays
+where this app puts them), so you can pick the result in the app's Settings.
 
-Usage: python scripts/make_wallpaper.py reference/lockscreen.png assets/wallpaper.jpg
+The top of a lock screen photo is usually soft bokeh, so those overlays are
+filled by inpainting a downscaled copy (smooth fill), then adding back film
+grain so the patch doesn't look plastic. The bottom buttons and home bar sit on
+busy texture; they're inpainted at full size and end up hidden under the app's
+own buttons anyway.
+
+Needs opencv-python and numpy.
+Usage: python scripts/make_wallpaper.py screenshot.png wallpaper.jpg
 """
 import sys
 
