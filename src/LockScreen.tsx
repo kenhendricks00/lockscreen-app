@@ -3,17 +3,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
-import { Notifications } from './components/Notifications';
+import { EdgeNote, NoteWidget } from './components/Notifications';
 import { CameraButton, FlashlightButton } from './components/QuickButtons';
 import { VerseWidget } from './components/VerseWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import { notifications } from './config';
+import { usePushover } from './pushover';
 import { useNow } from './time';
 
 const wallpaper = require('../assets/wallpaper.jpg');
 const BUTTONS_OFFSET = 24; // flashlight/camera row, above the bottom safe area
-const BUTTON_SIZE = 58;
-const { placement } = notifications;
 
 // Offsets were measured on the reference (428x926 pt, notch, 47 pt top inset)
 // and are applied relative to the safe area, so Dynamic Island phones shift
@@ -24,22 +23,29 @@ export function LockScreen() {
   const insets = useSafeAreaInsets();
   const top = Math.max(insets.top, 47);
   const bottom = Math.max(insets.bottom, 34);
-  const aboveButtons = bottom + BUTTONS_OFFSET + BUTTON_SIZE + 16;
+
+  const { notes, dismiss } = usePushover();
+  const note = notes[0];
+  const dismissNote = () => note && dismiss(note);
+  const noteAt = (spot: typeof notifications.placement) =>
+    notifications.placement === spot ? note : undefined;
+
+  const weatherNote = noteAt('weather');
+  const edgeNote = noteAt('edge');
 
   return (
     <View style={styles.screen}>
       <Image source={wallpaper} resizeMode="cover" style={styles.wallpaper} />
       <View style={{ paddingTop: top + 57 }}>
-        <DateLine now={now} />
+        <DateLine now={now} note={noteAt('event')} onNotePress={dismissNote} />
         <Clock now={now} />
         <View style={styles.widgets}>
-          <WeatherWidget />
+          {weatherNote ? <NoteWidget note={weatherNote} onPress={dismissNote} /> : <WeatherWidget />}
           <VerseWidget />
         </View>
-        {placement === 'side' && <Notifications now={now} style={styles.side} />}
       </View>
 
-      {placement !== 'side' && <Notifications now={now} style={[styles[placement], { bottom: aboveButtons }]} />}
+      {edgeNote && <EdgeNote note={edgeNote} onPress={dismissNote} bottom={bottom + BUTTONS_OFFSET} />}
 
       <View style={[styles.buttons, { bottom: bottom + BUTTONS_OFFSET }]}>
         <FlashlightButton />
@@ -62,9 +68,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 8,
   },
-  side: { alignSelf: 'flex-end', width: 172, marginTop: 28, marginRight: 12 },
-  bottom: { position: 'absolute', left: 10, right: 10 },
-  corner: { position: 'absolute', right: 14, width: 214 },
   buttons: {
     position: 'absolute',
     left: 53,

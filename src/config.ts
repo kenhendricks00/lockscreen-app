@@ -18,14 +18,14 @@ export const location = { latitude: 40.71, longitude: -74.01 }; // New York
 export const fallbackWeather = { temp: 61, high: 61, low: 37, code: 0, isDay: true };
 
 // Pushover notifications. Your login secret goes in .env.local (see README),
-// never in this file. Placement is purely a look:
-//   'bottom' - full-width cards above the buttons, like iOS
-//   'side'   - a slim column down the right edge, under the widgets
-//   'corner' - small pills tucked above the camera button
-export type Placement = 'bottom' | 'side' | 'corner';
+// never in this file. The newest notification borrows one spot on the screen
+// until you tap it away; with none pending, the spot looks normal.
+//   'edge'    - small sideways text running up the left edge
+//   'weather' - takes the weather widget's place
+//   'event'   - takes the calendar event's place in the top line
+export type Placement = 'edge' | 'weather' | 'event';
 
 export const notifications = {
-  placement: 'bottom' as Placement,
-  maxVisible: 3,
+  placement: 'edge' as Placement,
   demo: false, // true shows sample notifications, handy for picking a placement
 };

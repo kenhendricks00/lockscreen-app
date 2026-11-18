@@ -9,7 +9,6 @@ export type PushNote = {
   id: string;
   title: string;
   message: string;
-  icon: string;
   date: number; // unix seconds
   receipt?: string; // set on unacknowledged emergency-priority messages
 };
@@ -26,12 +25,10 @@ const headers = { 'User-Agent': 'LockScreen/1.0 (unofficial Pushover Open Client
 
 const minutesAgo = (minutes: number) => Math.floor(Date.now() / 1000) - minutes * 60;
 const SAMPLES: PushNote[] = [
-  { id: 's1', title: 'Front door', message: 'A package was delivered to the porch.', icon: 'default', date: minutesAgo(2) },
-  { id: 's2', title: 'Build finished', message: 'The unsigned .ipa is ready to download.', icon: 'default', date: minutesAgo(25) },
-  { id: 's3', title: 'Reminder', message: 'Dentist appointment tomorrow at 10.', icon: 'default', date: minutesAgo(130) },
+  { id: 's1', title: 'Front door', message: 'A package was delivered to the porch.', date: minutesAgo(2) },
+  { id: 's2', title: 'Build finished', message: 'The unsigned .ipa is ready to download.', date: minutesAgo(25) },
+  { id: 's3', title: 'Reminder', message: 'Dentist appointment tomorrow at 10.', date: minutesAgo(130) },
 ];
-
-export const iconUrl = (icon: string) => `https://api.pushover.net/icons/${icon}.png`;
 
 function post(path: string, params: Record<string, string>) {
   const body = Object.entries(params)
@@ -49,7 +46,6 @@ type RawMessage = {
   title?: string;
   message: string;
   app: string;
-  icon: string;
   date: number;
   priority: number;
   acked?: number;
@@ -61,7 +57,6 @@ const toNote = (m: RawMessage): PushNote => ({
   id: m.id_str,
   title: m.title || m.app,
   message: m.html ? m.message.replace(/<[^>]+>/g, '') : m.message,
-  icon: m.icon,
   date: m.date,
   receipt: m.priority >= 2 && m.acked !== 1 ? m.receipt : undefined,
 });

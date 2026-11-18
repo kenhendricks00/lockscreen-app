@@ -7,13 +7,13 @@ A recreation of my iPhone lock screen as an Expo (React Native + TypeScript) app
 - a big live glassy clock
 - live weather and a Bible verse widget
 - flashlight and camera buttons
-- Pushover notifications, which can sit at the bottom, along the side or in a corner
+- Pushover notifications, shown up the left edge, in the weather widget's spot, or in the top line
 
 ![Reference next to the app](screenshots/reference-vs-app.png)
 
-| Bottom | Side | Corner |
+| Edge | Weather spot | Event spot |
 | --- | --- | --- |
-| ![](screenshots/notifications-bottom.png) | ![](screenshots/notifications-side.png) | ![](screenshots/notifications-corner.png) |
+| ![](screenshots/notifications-edge.png) | ![](screenshots/notifications-weather.png) | ![](screenshots/notifications-event.png) |
 
 You don't need a Mac for any of this.
 
@@ -58,15 +58,17 @@ Everything personal is in **`src/config.ts`**:
 
 The app can show your [Pushover](https://pushover.net) notifications on the lock screen. It is an **unofficial Pushover Open Client**: it registers itself as an extra Pushover "device" and receives messages live over Pushover's WebSocket.
 
-**Pick a look.** In `src/config.ts`, set `notifications.placement` to one of these:
+**Pick a spot.** The newest notification borrows one spot on the screen. In `src/config.ts`, set `notifications.placement` to one of these:
 
-| `placement` | Look |
+| `placement` | Where it shows |
 | --- | --- |
-| `'bottom'` | Full-width cards above the flashlight and camera buttons, like iOS |
-| `'side'` | A slim column down the right edge, under the widgets |
-| `'corner'` | Small one-line pills tucked above the camera button |
+| `'edge'` | Small sideways text running up the left edge, ending beside the flashlight |
+| `'weather'` | In place of the weather widget, styled like a widget |
+| `'event'` | In place of the calendar event in the top line, with a bell icon |
 
-To preview a placement before setting up Pushover, set `demo: true`. That shows three sample notifications.
+When nothing is pending, the spot looks normal: there's no edge text, and the weather and event show as usual. Tap the notification to dismiss it and see the next one.
+
+To preview a spot before setting up Pushover, set `demo: true`. That shows three sample notifications.
 
 **Connect your account** (one time):
 
