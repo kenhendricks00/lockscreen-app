@@ -34,6 +34,29 @@ export function Toggle({ label, value, onChange }: { label: string; value: boole
   );
 }
 
+type SegmentsProps<T> = {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (value: T) => void;
+};
+
+/** An iOS-style segmented control. */
+export function Segments<T extends string | number>({ options, value, onChange }: SegmentsProps<T>) {
+  return (
+    <View style={styles.segments}>
+      {options.map((option) => (
+        <Pressable
+          key={option.value}
+          onPress={() => onChange(option.value)}
+          style={[styles.segment, option.value === value && styles.segmentOn]}
+        >
+          <Text style={styles.segmentText}>{option.label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 export function Hint({ children }: { children: ReactNode }) {
   return <Text style={styles.hint}>{children}</Text>;
 }
@@ -70,4 +93,8 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   label: { ...sans('400'), fontSize: 16, color: 'white' },
   hint: { ...sans('400'), fontSize: 13, color: '#8e8e93' },
+  segments: { flexDirection: 'row', backgroundColor: '#3a3a3c', borderRadius: 9, padding: 2 },
+  segment: { flex: 1, alignItems: 'center', paddingVertical: 7, borderRadius: 7 },
+  segmentOn: { backgroundColor: '#636366' },
+  segmentText: { ...sans('500'), fontSize: 13, color: 'white' },
 });

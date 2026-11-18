@@ -57,7 +57,11 @@ Press and hold anywhere on the lock screen to open **Settings**. There you can:
 - Set the **weather city**. Type a name and tap **Set**; it's looked up with Open-Meteo's free geocoder.
 - Pick where **Pushover notifications** show, and turn sample notifications on to preview them.
 - Show or hide the **status bar** along the top, and type your **carrier name** for it. Battery and Wi-Fi are live. iOS doesn't let apps read the carrier name or signal strength, so you type the carrier yourself and the signal bars always show full.
-- Turn **Keep screen awake** on or off. It's on by default and stops the phone dimming and auto-locking while the app is open. It's best used on a charger; iPhones with OLED screens can get burn-in if one static image shows for hours every day.
+- Choose how the screen behaves. While the app is open, the iPhone never auto-locks:
+  - **Keep screen bright** off (the default): after the **Dim after** time with no touches (15 seconds to 5 minutes), the screen dims like an always-on display. It lowers the real brightness and darkens the picture. A tap, or a new Pushover notification, wakes it. The first tap only wakes the screen, so it can't switch on the flashlight by accident.
+  - **Keep screen bright** on: the screen stays at full brightness.
+
+  Either way it's best used on a charger. iPhones with OLED screens can get burn-in if one static image shows for hours every day, and dimming helps with that.
 
 Settings are saved on the phone only, never in the code. The defaults for a fresh install are in `src/config.ts`.
 

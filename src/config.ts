@@ -19,7 +19,10 @@ export const defaults = {
   longitude: -74.01,
   placement: 'edge' as Placement,
   demoNotifications: false, // sample notifications, handy for picking a placement
-  keepAwake: true, // stop the screen dimming and auto-locking while the app is open
+  // The app never lets the iPhone auto-lock. With alwaysBright off, it dims
+  // after dimAfter seconds idle; a tap or a new notification wakes it.
+  alwaysBright: false,
+  dimAfter: 30,
   statusBar: true, // carrier, signal, Wi-Fi and battery along the top
   carrier: '', // iOS doesn't tell apps the carrier name, so type it in Settings
 };

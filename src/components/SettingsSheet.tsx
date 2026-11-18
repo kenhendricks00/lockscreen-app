@@ -6,12 +6,19 @@ import { sans } from '../fonts';
 import { deleteWallpaper, pickWallpaper, useSettings } from '../settings';
 import { findCity } from '../weather';
 import { PushoverSignIn } from './PushoverSignIn';
-import { Button, Field, formStyles, Hint, Section, Toggle } from './SettingsControls';
+import { Button, Field, formStyles, Hint, Section, Segments, Toggle } from './SettingsControls';
 
 const PLACEMENTS: { value: Placement; label: string }[] = [
   { value: 'edge', label: 'Left edge' },
   { value: 'weather', label: 'Weather spot' },
   { value: 'event', label: 'Event line' },
+];
+
+const DIM_DELAYS = [
+  { value: 15, label: '15 sec' },
+  { value: 30, label: '30 sec' },
+  { value: 60, label: '1 min' },
+  { value: 300, label: '5 min' },
 ];
 
 /** Everything personal, set on the phone. Opened by long-pressing the lock screen. */
@@ -110,17 +117,11 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
             ) : (
               <PushoverSignIn onConnect={setPushover} />
             )}
-            <View style={styles.segments}>
-              {PLACEMENTS.map(({ value, label }) => (
-                <Pressable
-                  key={value}
-                  onPress={() => update({ placement: value })}
-                  style={[styles.segment, settings.placement === value && styles.segmentOn]}
-                >
-                  <Text style={styles.segmentText}>{label}</Text>
-                </Pressable>
-              ))}
-            </View>
+            <Segments
+              options={PLACEMENTS}
+              value={settings.placement}
+              onChange={(placement) => update({ placement })}
+            />
             <Toggle
               label="Show sample notifications"
               value={settings.demoNotifications}
@@ -146,10 +147,24 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               />
             )}
             <Toggle
-              label="Keep screen awake"
-              value={settings.keepAwake}
-              onChange={(keepAwake) => update({ keepAwake })}
+              label="Keep screen bright"
+              value={settings.alwaysBright}
+              onChange={(alwaysBright) => update({ alwaysBright })}
             />
+            {!settings.alwaysBright && (
+              <>
+                <Text style={formStyles.label}>Dim after</Text>
+                <Segments
+                  options={DIM_DELAYS}
+                  value={settings.dimAfter}
+                  onChange={(dimAfter) => update({ dimAfter })}
+                />
+              </>
+            )}
+            <Hint>
+              The screen stays on either way. While dimmed, a tap or a new Pushover notification wakes
+              it.
+            </Hint>
           </Section>
         </ScrollView>
       </View>
@@ -169,8 +184,4 @@ const styles = StyleSheet.create({
   heading: { ...sans('700'), fontSize: 28, color: 'white' },
   done: { ...sans('600'), fontSize: 17, color: '#0a84ff' },
   content: { padding: 20, paddingTop: 8, gap: 22 },
-  segments: { flexDirection: 'row', backgroundColor: '#3a3a3c', borderRadius: 9, padding: 2 },
-  segment: { flex: 1, alignItems: 'center', paddingVertical: 7, borderRadius: 7 },
-  segmentOn: { backgroundColor: '#636366' },
-  segmentText: { ...sans('500'), fontSize: 13, color: 'white' },
 });

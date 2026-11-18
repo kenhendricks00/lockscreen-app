@@ -1,5 +1,5 @@
 import { useKeepAwake } from 'expo-keep-awake';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,18 +12,13 @@ import { SettingsSheet } from './components/SettingsSheet';
 import { VerseWidget } from './components/VerseWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import type { Placement } from './config';
+import { DimOverlay, useIdleDim } from './dim';
 import { usePushover } from './pushover';
 import { useSettings } from './settings';
 import { useNow } from './time';
 
 const defaultWallpaper = require('../assets/wallpaper.jpg');
 const BUTTONS_OFFSET = 24; // flashlight/camera row, above the bottom safe area
-
-// Hooks can't be called conditionally, so the setting mounts this or not.
-function KeepAwake() {
-  useKeepAwake();
-  return null;
-}
 
 // Offsets were measured on a 428x926 pt iPhone (notch, 47 pt top inset) and
 // are applied relative to the safe area, so Dynamic Island phones shift
@@ -37,9 +32,19 @@ export function LockScreen() {
   const { settings, pushover } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Never let the iPhone auto-lock; dim when idle instead (unless always bright).
+  useKeepAwake();
+  const { dimmed, wake } = useIdleDim(!settings.alwaysBright && !settingsOpen, settings.dimAfter);
+
   const { notes, dismiss } = usePushover(pushover, settings.demoNotifications);
   const note = notes[0];
   const dismissNote = () => note && dismiss(note);
+
+  // A new notification wakes a dimmed screen.
+  const latestId = note?.id;
+  useEffect(() => {
+    if (latestId) wake();
+  }, [latestId, wake]);
   const noteAt = (spot: Placement) => (settings.placement === spot ? note : undefined);
 
   const weatherNote = noteAt('weather');
@@ -49,7 +54,12 @@ export function LockScreen() {
   return (
     <>
       {/* Long-press anywhere opens Settings, like customizing the real lock screen. */}
-      <Pressable style={styles.screen} onLongPress={() => setSettingsOpen(true)} delayLongPress={600}>
+      <Pressable
+        style={styles.screen}
+        onTouchStart={wake}
+        onLongPress={() => setSettingsOpen(true)}
+        delayLongPress={600}
+      >
         <Image source={wallpaper} resizeMode="cover" style={styles.wallpaper} />
         {settings.statusBar && <LockStatusBar top={top} carrier={settings.carrier} />}
         <View style={{ paddingTop: top + 57 }}>
@@ -70,7 +80,7 @@ export function LockScreen() {
 
         {/* iPhones draw the real home indicator on top of every app. */}
         {Platform.OS !== 'ios' && <View style={styles.homeIndicator} />}
-        {settings.keepAwake && <KeepAwake />}
+        <DimOverlay dimmed={dimmed} onWake={wake} />
       </Pressable>
       <SettingsSheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
