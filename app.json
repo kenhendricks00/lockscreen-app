@@ -45,7 +45,13 @@
           "faceIDPermission": false
         }
       ],
-      ["expo-audio", { "microphonePermission": false }]
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
+      ],
+      "expo-asset"
     ]
   }
 }
