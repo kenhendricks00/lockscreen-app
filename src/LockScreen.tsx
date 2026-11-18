@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
+import { VerseWidget } from './components/VerseWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import { useNow } from './time';
 
@@ -24,6 +25,7 @@ export function LockScreen() {
         <Clock now={now} />
         <View style={styles.widgets}>
           <WeatherWidget />
+          <VerseWidget />
         </View>
       </View>
 
