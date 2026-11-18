@@ -42,3 +42,6 @@ yarn-error.*
 
 # personal files (your screenshots and photos), never committed
 reference/
+
+# downloaded .ipa builds
+/build/
