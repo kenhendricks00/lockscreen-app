@@ -1,0 +1,19 @@
+# Custom EAS build: an unsigned .ipa for AltStore / SideStore to re-sign.
+# Used by the "sideload" profile in eas.json.
+build:
+  name: Unsigned iOS app
+  steps:
+    - eas/checkout
+    - eas/install_node_modules
+    - eas/prebuild
+    - run:
+        name: Install pods
+        working_directory: ./ios
+        command: pod install
+    - run:
+        name: Build unsigned .ipa
+        command: bash scripts/build-unsigned-ipa.sh
+    - eas/upload_artifact:
+        name: Upload .ipa
+        inputs:
+          path: ios/build/LockScreen-unsigned.ipa
