@@ -1,16 +1,18 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { verse } from '../config';
 import { sans } from '../fonts';
+import { useSettings } from '../settings';
 
 export function VerseWidget() {
+  const { verseReference, verseText } = useSettings().settings;
+
   return (
     <View style={styles.widget}>
       <Text style={[styles.text, styles.reference]} numberOfLines={1}>
-        {verse.reference}
+        {verseReference}
       </Text>
       <Text style={styles.text} numberOfLines={2}>
-        {verse.text}
+        {verseText}
       </Text>
     </View>
   );

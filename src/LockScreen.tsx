@@ -1,60 +1,77 @@
-import { Image, Platform, StyleSheet, View } from 'react-native';
+import { useKeepAwake } from 'expo-keep-awake';
+import { useState } from 'react';
+import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
 import { EdgeNote, NoteWidget } from './components/Notifications';
 import { CameraButton, FlashlightButton } from './components/QuickButtons';
+import { SettingsSheet } from './components/SettingsSheet';
 import { VerseWidget } from './components/VerseWidget';
 import { WeatherWidget } from './components/WeatherWidget';
-import { notifications } from './config';
+import type { Placement } from './config';
 import { usePushover } from './pushover';
+import { useSettings } from './settings';
 import { useNow } from './time';
 
-const wallpaper = require('../assets/wallpaper.jpg');
+const defaultWallpaper = require('../assets/wallpaper.jpg');
 const BUTTONS_OFFSET = 24; // flashlight/camera row, above the bottom safe area
 
-// Offsets were measured on the reference (428x926 pt, notch, 47 pt top inset)
-// and are applied relative to the safe area, so Dynamic Island phones shift
+// Hooks can't be called conditionally, so the setting mounts this or not.
+function KeepAwake() {
+  useKeepAwake();
+  return null;
+}
+
+// Offsets were measured on a 428x926 pt iPhone (notch, 47 pt top inset) and
+// are applied relative to the safe area, so Dynamic Island phones shift
 // everything down the same way iOS does. Web has no insets, so it falls back
-// to the reference phone's.
+// to that phone's.
 export function LockScreen() {
   const now = useNow();
   const insets = useSafeAreaInsets();
   const top = Math.max(insets.top, 47);
   const bottom = Math.max(insets.bottom, 34);
+  const { settings } = useSettings();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const { notes, dismiss } = usePushover();
+  const { notes, dismiss } = usePushover(settings.demoNotifications);
   const note = notes[0];
   const dismissNote = () => note && dismiss(note);
-  const noteAt = (spot: typeof notifications.placement) =>
-    notifications.placement === spot ? note : undefined;
+  const noteAt = (spot: Placement) => (settings.placement === spot ? note : undefined);
 
   const weatherNote = noteAt('weather');
   const edgeNote = noteAt('edge');
+  const wallpaper = settings.wallpaper ? { uri: settings.wallpaper } : defaultWallpaper;
 
   return (
-    <View style={styles.screen}>
-      <Image source={wallpaper} resizeMode="cover" style={styles.wallpaper} />
-      <View style={{ paddingTop: top + 57 }}>
-        <DateLine now={now} note={noteAt('event')} onNotePress={dismissNote} />
-        <Clock now={now} />
-        <View style={styles.widgets}>
-          {weatherNote ? <NoteWidget note={weatherNote} onPress={dismissNote} /> : <WeatherWidget />}
-          <VerseWidget />
+    <>
+      {/* Long-press anywhere opens Settings, like customizing the real lock screen. */}
+      <Pressable style={styles.screen} onLongPress={() => setSettingsOpen(true)} delayLongPress={600}>
+        <Image source={wallpaper} resizeMode="cover" style={styles.wallpaper} />
+        <View style={{ paddingTop: top + 57 }}>
+          <DateLine now={now} note={noteAt('event')} onNotePress={dismissNote} />
+          <Clock now={now} />
+          <View style={styles.widgets}>
+            {weatherNote ? <NoteWidget note={weatherNote} onPress={dismissNote} /> : <WeatherWidget />}
+            <VerseWidget />
+          </View>
         </View>
-      </View>
 
-      {edgeNote && <EdgeNote note={edgeNote} onPress={dismissNote} bottom={bottom + BUTTONS_OFFSET} />}
+        {edgeNote && <EdgeNote note={edgeNote} onPress={dismissNote} bottom={bottom + BUTTONS_OFFSET} />}
 
-      <View style={[styles.buttons, { bottom: bottom + BUTTONS_OFFSET }]}>
-        <FlashlightButton />
-        <CameraButton />
-      </View>
+        <View style={[styles.buttons, { bottom: bottom + BUTTONS_OFFSET }]}>
+          <FlashlightButton />
+          <CameraButton />
+        </View>
 
-      {/* iPhones draw the real home indicator on top of every app. */}
-      {Platform.OS !== 'ios' && <View style={styles.homeIndicator} />}
-    </View>
+        {/* iPhones draw the real home indicator on top of every app. */}
+        {Platform.OS !== 'ios' && <View style={styles.homeIndicator} />}
+        {settings.keepAwake && <KeepAwake />}
+      </Pressable>
+      <SettingsSheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </>
   );
 }
 

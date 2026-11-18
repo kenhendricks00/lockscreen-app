@@ -2,10 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { sans } from '../fonts';
+import { useSettings } from '../settings';
 import { describe, useWeather } from '../weather';
 
 export function WeatherWidget() {
-  const weather = useWeather();
+  const { latitude, longitude } = useSettings().settings;
+  const weather = useWeather(latitude, longitude);
   const { label, icon } = describe(weather);
 
   return (

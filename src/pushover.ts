@@ -3,8 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { LayoutAnimation } from 'react-native';
 
-import { notifications } from './config';
-
 export type PushNote = {
   id: string;
   title: string;
@@ -73,8 +71,9 @@ async function sync(): Promise<PushNote[]> {
 }
 
 /** Live notifications over Pushover's WebSocket, saved on the phone until dismissed. */
-export function usePushover() {
-  const [notes, setNotes] = useState<PushNote[]>(notifications.demo ? SAMPLES : []);
+export function usePushover(demo: boolean) {
+  const [notes, setNotes] = useState<PushNote[]>([]);
+  const [samples, setSamples] = useState(SAMPLES);
   const [restored, setRestored] = useState(!configured);
 
   useEffect(() => {
@@ -129,8 +128,10 @@ export function usePushover() {
   const dismiss = (note: PushNote) => {
     if (note.receipt) post(`/receipts/${note.receipt}/acknowledge.json`, { secret }).catch(() => {});
     LayoutAnimation.easeInEaseOut();
-    setNotes((old) => old.filter((n) => n.id !== note.id));
+    const without = (list: PushNote[]) => list.filter((n) => n.id !== note.id);
+    setNotes(without);
+    setSamples(without);
   };
 
-  return { notes, dismiss };
+  return { notes: demo ? samples : notes, dismiss };
 }
