@@ -1,17 +1,21 @@
 # Lock Screen
 
-A recreation of my iPhone lock screen as an Expo (React Native + TypeScript) app:
+An iOS-style lock screen as an Expo (React Native + TypeScript) app:
 
-- the wallpaper photo
+- your own wallpaper photo
 - the date and next calendar event
 - a big live glassy clock
-- live weather and a Bible verse widget
+- live weather for your city and a Bible verse widget
 - flashlight and camera buttons
 - Pushover notifications, shown up the left edge, in the weather widget's spot, or in the top line
 
-![Reference next to the app](screenshots/reference-vs-app.png)
+Everything personal is set on the phone, in Settings, and stays there.
 
-| Edge | Weather spot | Event spot |
+| Default look | Settings (long-press) |
+| --- | --- |
+| ![](screenshots/app.png) | ![](screenshots/settings.png) |
+
+| Notification: edge | Weather spot | Event spot |
 | --- | --- | --- |
 | ![](screenshots/notifications-edge.png) | ![](screenshots/notifications-weather.png) | ![](screenshots/notifications-event.png) |
 
@@ -42,16 +46,26 @@ npx expo start --tunnel
 
 Save any file and the app on the phone reloads by itself.
 
-### Make it yours
+### Make it yours: long-press the lock screen
 
-Everything personal is in **`src/config.ts`**:
+Press and hold anywhere on the lock screen to open **Settings**. There you can:
 
-- the calendar event (`nextEvent`)
-- the verse (`verse`)
-- the weather location (`location`)
-- the offline weather fallback (`fallbackWeather`)
-- whether the screen stays on while the app is open (`keepAwake`, on by default). It's best used on a charger; iPhones with OLED screens can get burn-in if one static image shows for hours every day.
-- the notification settings (`notifications`)
+- **Choose a wallpaper** from your Photos. It's copied into the app's own storage. **Use default** goes back to the built-in gradient.
+- Set the **next event** (time and title). Leave both blank to hide it.
+- Set the **verse** reference and text.
+- Set the **weather city**. Type a name and tap **Set**; it's looked up with Open-Meteo's free geocoder.
+- Pick where **Pushover notifications** show, and turn sample notifications on to preview them.
+- Turn **Keep screen awake** on or off. It's on by default and stops the phone dimming and auto-locking while the app is open. It's best used on a charger; iPhones with OLED screens can get burn-in if one static image shows for hours every day.
+
+Settings are saved on the phone only, never in the code. The defaults for a fresh install are in `src/config.ts`.
+
+**Turning a lock screen screenshot into a wallpaper.** If your wallpaper only exists as a lock screen screenshot, `scripts/make_wallpaper.py` can erase the clock, widgets and status bar from it. It works on 1284×2778 screenshots and needs `opencv-python` and `numpy`:
+
+```sh
+python scripts/make_wallpaper.py screenshot.png wallpaper.jpg
+```
+
+Then get `wallpaper.jpg` onto the phone, for example through iCloud Drive, save it to Photos, and pick it in Settings.
 
 ---
 
@@ -59,17 +73,17 @@ Everything personal is in **`src/config.ts`**:
 
 The app can show your [Pushover](https://pushover.net) notifications on the lock screen. It is an **unofficial Pushover Open Client**: it registers itself as an extra Pushover "device" and receives messages live over Pushover's WebSocket.
 
-**Pick a spot.** The newest notification borrows one spot on the screen. In `src/config.ts`, set `notifications.placement` to one of these:
+**Pick a spot.** The newest notification borrows one spot on the screen. Choose it in Settings, under *Pushover notifications*:
 
-| `placement` | Where it shows |
+| Option | Where it shows |
 | --- | --- |
-| `'edge'` | Small sideways text running up the left edge, ending beside the flashlight |
-| `'weather'` | In place of the weather widget, styled like a widget |
-| `'event'` | In place of the calendar event in the top line, with a bell icon |
+| **Left edge** | Small sideways text running up the left edge, ending beside the flashlight |
+| **Weather spot** | In place of the weather widget, styled like a widget |
+| **Event line** | In place of the calendar event in the top line, with a bell icon |
 
 When nothing is pending, the spot looks normal: there's no edge text, and the weather and event show as usual. Tap the notification to dismiss it and see the next one.
 
-To preview a spot before setting up Pushover, set `demo: true`. That shows three sample notifications.
+To preview a spot before setting up Pushover, turn on **Show sample notifications**. That shows three sample notifications.
 
 **Connect your account** (one time):
 
@@ -128,7 +142,7 @@ The build logic for both routes lives in `scripts/build-unsigned-ipa.sh`.
 
 ### Option B: GitHub Actions (GitHub's macOS machines)
 
-1. Create a repository on GitHub and push this project to it. Make it **private** if you'll add Pushover secrets: anyone who can see the repo can download the built app.
+1. Create a repository on GitHub and push this project to it. A public repo is fine: the code contains nothing personal. But if you'll add Pushover secrets, make it **private**, because anyone who can see the repo can download the built app, and the secrets are inside it.
 2. *(Pushover only)* In the repo, go to **Settings → Secrets and variables → Actions**. Add two secrets: `PUSHOVER_SECRET` and `PUSHOVER_DEVICE_ID`.
 3. Open the **Actions** tab, choose **Unsigned iOS build** and click **Run workflow**. It takes about 15–30 minutes.
 4. Open the finished run and download **LockScreen-unsigned-ipa** under *Artifacts*. Unzip it to get the .ipa.
@@ -166,22 +180,23 @@ SideStore is a fork of AltStore that refreshes apps on the phone itself, using a
 ```
 App.tsx                      loads fonts, hides the status bar
 src/LockScreen.tsx           layout, positioned from the safe area insets
-src/config.ts                everything you'd want to edit
-src/time.ts                  live clock (re-renders exactly on the minute)
+src/config.ts                defaults for a fresh install
+src/settings.tsx             saved settings + wallpaper picker
+src/time.ts                  live clock and date (updates on the minute and on wake)
 src/weather.ts               Open-Meteo forecast with an offline fallback
 src/pushover.ts              tiny Pushover Open Client (WebSocket + REST)
-src/components/              clock, date line, widgets, buttons, notifications
-scripts/make_wallpaper.py    how assets/wallpaper.jpg was made
+src/components/              clock, date line, widgets, buttons, notifications, settings
+scripts/make_wallpaper.py    erases the overlays from a lock screen screenshot
 scripts/pushover-setup.mjs   one-time Pushover login + device registration
 scripts/build-unsigned-ipa.sh  unsigned .ipa build used by EAS and GitHub Actions
 ```
 
-**Wallpaper.** `assets/wallpaper.jpg` comes from the original 1284×2778 screenshot.
+**Wallpaper.** The default `assets/wallpaper.jpg` is a generated abstract gradient. A photo you pick in Settings is stored in the app's documents folder on the phone.
 
-- **Top half:** the status bar, date line, clock and widgets sit on soft, out-of-focus background. They were removed by inpainting a downscaled copy, blurring it, and adding film grain back so the patches blend in.
-- **Bottom buttons and home bar:** these sit on detailed texture, so they were inpainted at full size. The patches aren't perfect, but the app's own buttons cover them.
+`scripts/make_wallpaper.py` cleans screenshots in two ways:
 
-To redo it, put the screenshot at `reference/lockscreen.png` and run `python scripts/make_wallpaper.py reference/lockscreen.png assets/wallpaper.jpg`. This needs `opencv-python` and `numpy`.
+- **Top half:** the status bar, date line, clock and widgets usually sit on soft, out-of-focus background. They're removed by inpainting a downscaled copy, blurring it, and adding film grain back so the patches blend in.
+- **Bottom buttons and home bar:** these sit on detailed texture, so they're inpainted at full size. The patches aren't perfect, but the app's own buttons cover them.
 
 **Clock.** The clock is drawn with SVG. It uses Fraunces Medium, the closest free match to the iOS rounded serif, with a white-to-periwinkle gradient, a light top rim and a soft bottom edge.
 
