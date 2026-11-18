@@ -22,6 +22,7 @@ export const defaults = {
   longitude: -74.01,
   placement: 'edge' as Placement,
   demoNotifications: false, // sample notifications, handy for picking a placement
+  readAloud: false, // speak new notifications as they arrive
   // The app never lets the iPhone auto-lock. With alwaysBright off, it dims
   // after dimAfter seconds idle; a tap or a new notification wakes it.
   alwaysBright: false,

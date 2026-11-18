@@ -90,6 +90,8 @@ The app can show your [Pushover](https://pushover.net) notifications on the lock
 
 When nothing is pending, the spot looks normal: there's no edge text, and the weather and event show as usual. Tap the notification to dismiss it and see the next one.
 
+**Read aloud.** Turn on **Read new notifications aloud** to hear each new notification ("title. message") as it arrives. It works even with the silent switch on, and music keeps playing underneath. Up to three are read at once; a bigger batch ends with "and 5 more notifications". Turning the option on says a short test line, so you can check the volume. Only notifications that arrive while the app is open are read.
+
 To preview a spot before setting up Pushover, turn on **Show sample notifications**. That shows three sample notifications.
 
 **Connect your account** in Settings, under *Pushover notifications*:

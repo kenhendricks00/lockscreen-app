@@ -1,7 +1,7 @@
 // Minimal unofficial Pushover Open Client: https://pushover.net/api/client
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LayoutAnimation } from 'react-native';
 
 export type PushNote = {
@@ -116,11 +116,24 @@ async function sync({ secret, deviceId }: PushoverAccount): Promise<PushNote[]> 
   return messages.map(toNote).sort((a, b) => b.date - a.date);
 }
 
-/** Live notifications over Pushover's WebSocket, saved on the phone until dismissed. */
-export function usePushover(account: PushoverAccount | null, demo: boolean) {
+/**
+ * Live notifications over Pushover's WebSocket, saved on the phone until
+ * dismissed. `onArrive` gets each batch of newly downloaded notifications.
+ */
+export function usePushover(
+  account: PushoverAccount | null,
+  demo: boolean,
+  onArrive: (fresh: PushNote[]) => void,
+) {
   const [notes, setNotes] = useState<PushNote[]>([]);
   const [samples, setSamples] = useState(SAMPLES);
   const [restored, setRestored] = useState(false);
+
+  // Kept in a ref so a new callback each render doesn't reconnect the socket.
+  const onArriveRef = useRef(onArrive);
+  useEffect(() => {
+    onArriveRef.current = onArrive;
+  });
 
   useEffect(() => {
     AsyncStorage.getItem(NOTES_KEY)
@@ -141,7 +154,11 @@ export function usePushover(account: PushoverAccount | null, demo: boolean) {
 
     const pull = () =>
       sync(account)
-        .then((fresh) => fresh.length && setNotes((old) => [...fresh, ...old].slice(0, KEEP)))
+        .then((fresh) => {
+          if (fresh.length === 0) return;
+          setNotes((old) => [...fresh, ...old].slice(0, KEEP));
+          onArriveRef.current(fresh);
+        })
         .catch(() => {});
 
     const connect = () => {

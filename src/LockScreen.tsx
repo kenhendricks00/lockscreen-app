@@ -1,5 +1,5 @@
 import { useKeepAwake } from 'expo-keep-awake';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -15,6 +15,7 @@ import type { Placement } from './config';
 import { DimOverlay, useIdleDim } from './dim';
 import { usePushover } from './pushover';
 import { useSettings } from './settings';
+import { readAloud } from './speech';
 import { useNow } from './time';
 
 const defaultWallpaper = require('../assets/wallpaper.jpg');
@@ -36,15 +37,13 @@ export function LockScreen() {
   useKeepAwake();
   const { dimmed, wake } = useIdleDim(!settings.alwaysBright && !settingsOpen, settings.dimAfter);
 
-  const { notes, dismiss } = usePushover(pushover, settings.demoNotifications);
+  // New notifications wake a dimmed screen, and are spoken if that's turned on.
+  const { notes, dismiss } = usePushover(pushover, settings.demoNotifications, (fresh) => {
+    wake();
+    if (settings.readAloud) readAloud(fresh);
+  });
   const note = notes[0];
   const dismissNote = () => note && dismiss(note);
-
-  // A new notification wakes a dimmed screen.
-  const latestId = note?.id;
-  useEffect(() => {
-    if (latestId) wake();
-  }, [latestId, wake]);
   const noteAt = (spot: Placement) => (settings.placement === spot ? note : undefined);
 
   const weatherNote = noteAt('weather');

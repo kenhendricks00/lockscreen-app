@@ -4,6 +4,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import type { Placement } from '../config';
 import { type ClockFont, clockFonts, sans } from '../fonts';
 import { deleteWallpaper, pickWallpaper, useSettings } from '../settings';
+import { say } from '../speech';
 import { findCity } from '../weather';
 import { PushoverSignIn } from './PushoverSignIn';
 import { Button, Field, formStyles, Hint, Section, Segments, Toggle } from './SettingsControls';
@@ -134,6 +135,14 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               options={PLACEMENTS}
               value={settings.placement}
               onChange={(placement) => update({ placement })}
+            />
+            <Toggle
+              label="Read new notifications aloud"
+              value={settings.readAloud}
+              onChange={(readAloud) => {
+                update({ readAloud });
+                if (readAloud) say('New notifications will be read aloud.');
+              }}
             />
             <Toggle
               label="Show sample notifications"

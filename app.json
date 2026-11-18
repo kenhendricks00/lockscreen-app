@@ -39,7 +39,13 @@
           "recordAudioAndroid": false
         }
       ],
-      ["expo-secure-store", { "faceIDPermission": false }]
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
+      ["expo-audio", { "microphonePermission": false }]
     ]
   }
 }
