@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
+import { WeatherWidget } from './components/WeatherWidget';
 import { useNow } from './time';
 
 const wallpaper = require('../assets/wallpaper.jpg');
@@ -21,6 +22,9 @@ export function LockScreen() {
       <View style={{ paddingTop: top + 57 }}>
         <DateLine now={now} />
         <Clock now={now} />
+        <View style={styles.widgets}>
+          <WeatherWidget />
+        </View>
       </View>
 
       {/* iPhones draw the real home indicator on top of every app. */}
@@ -31,6 +35,13 @@ export function LockScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: 'black' },
+  widgets: {
+    width: 348,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
   homeIndicator: {
     position: 'absolute',
     bottom: 8,
