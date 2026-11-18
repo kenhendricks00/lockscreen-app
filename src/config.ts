@@ -10,6 +10,9 @@ import type { ClockFont } from './fonts';
 //   'event'   - takes the calendar event's place in the top line
 export type Placement = 'edge' | 'weather' | 'event';
 
+// When new notifications are spoken: never, always, or only with headphones on.
+export type ReadAloud = 'off' | 'always' | 'headphones';
+
 export const defaults = {
   wallpaper: null as string | null, // a photo picked in Settings; null uses assets/wallpaper.jpg
   clockFont: 'serif' as ClockFont,
@@ -22,7 +25,7 @@ export const defaults = {
   longitude: -74.01,
   placement: 'edge' as Placement,
   demoNotifications: false, // sample notifications, handy for picking a placement
-  readAloud: false, // speak new notifications as they arrive
+  readAloudMode: 'off' as ReadAloud,
   // The app never lets the iPhone auto-lock. With alwaysBright off, it dims
   // after dimAfter seconds idle; a tap or a new notification wakes it.
   alwaysBright: false,

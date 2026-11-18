@@ -90,7 +90,13 @@ The app can show your [Pushover](https://pushover.net) notifications on the lock
 
 When nothing is pending, the spot looks normal: there's no edge text, and the weather and event show as usual. Tap the notification to dismiss it and see the next one.
 
-**Read aloud.** Turn on **Read new notifications aloud** to hear each new notification ("title. message") as it arrives. It works even with the silent switch on, and music keeps playing underneath. Up to three are read at once; a bigger batch ends with "and 5 more notifications". Turning the option on says a short test line, so you can check the volume. Only notifications that arrive while the app is open are read.
+**Read aloud.** Under **Read new notifications aloud**, pick:
+
+- **Off**: notifications are never spoken. This is the default.
+- **Always**: each new notification ("title. message") is spoken as it arrives.
+- **Headphones**: notifications are spoken only while wired or Bluetooth headphones, such as AirPods, are connected. CarPlay doesn't count. A Bluetooth car stereo without CarPlay looks like headphones to iOS, so it does count. This needs the installed app; Expo Go can't detect headphones, so in Expo Go this mode stays quiet.
+
+Speech plays even with the silent switch on, and music keeps playing underneath. Up to three notifications are read at once; a bigger batch ends with "and 5 more notifications". Choosing a mode says a short test line when it's allowed to speak. Only notifications that arrive while the app is open are read.
 
 To preview a spot before setting up Pushover, turn on **Show sample notifications**. That shows three sample notifications.
 
@@ -181,6 +187,8 @@ src/settings.tsx             saved settings, Pushover account, wallpaper picker
 src/time.ts                  live clock and date (updates on the minute and on wake)
 src/weather.ts               Open-Meteo forecast with an offline fallback
 src/pushover.ts              tiny Pushover Open Client: sign-in, WebSocket, REST
+src/speech.ts                read-aloud
+modules/audio-route/         tiny native module: are headphones connected?
 src/components/              clock, date line, widgets, buttons, notifications, settings
 scripts/make_wallpaper.py    erases the overlays from a lock screen screenshot
 scripts/build-unsigned-ipa.sh  unsigned .ipa build used by EAS and GitHub Actions

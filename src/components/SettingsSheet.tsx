@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import type { Placement } from '../config';
+import type { Placement, ReadAloud } from '../config';
 import { type ClockFont, clockFonts, sans } from '../fonts';
 import { deleteWallpaper, pickWallpaper, useSettings } from '../settings';
-import { say } from '../speech';
+import { canDetectHeadphones, previewReadAloud } from '../speech';
 import { findCity } from '../weather';
 import { PushoverSignIn } from './PushoverSignIn';
 import { Button, Field, formStyles, Hint, Section, Segments, Toggle } from './SettingsControls';
@@ -13,6 +13,12 @@ const PLACEMENTS: { value: Placement; label: string }[] = [
   { value: 'edge', label: 'Left edge' },
   { value: 'weather', label: 'Weather spot' },
   { value: 'event', label: 'Event line' },
+];
+
+const READ_ALOUD: { value: ReadAloud; label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'always', label: 'Always' },
+  { value: 'headphones', label: 'Headphones' },
 ];
 
 const CLOCK_FONTS = (Object.keys(clockFonts) as ClockFont[]).map((value) => ({
@@ -136,14 +142,22 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               value={settings.placement}
               onChange={(placement) => update({ placement })}
             />
-            <Toggle
-              label="Read new notifications aloud"
-              value={settings.readAloud}
-              onChange={(readAloud) => {
-                update({ readAloud });
-                if (readAloud) say('New notifications will be read aloud.');
+            <Text style={formStyles.label}>Read new notifications aloud</Text>
+            <Segments
+              options={READ_ALOUD}
+              value={settings.readAloudMode}
+              onChange={(readAloudMode) => {
+                update({ readAloudMode });
+                previewReadAloud(readAloudMode);
               }}
             />
+            {settings.readAloudMode === 'headphones' && (
+              <Hint>
+                {canDetectHeadphones
+                  ? 'Only while wired or Bluetooth headphones are connected. CarPlay doesn’t count.'
+                  : 'Expo Go can’t detect headphones, so this stays quiet here. It works in the installed app.'}
+              </Hint>
+            )}
             <Toggle
               label="Show sample notifications"
               value={settings.demoNotifications}

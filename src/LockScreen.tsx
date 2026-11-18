@@ -40,7 +40,7 @@ export function LockScreen() {
   // New notifications wake a dimmed screen, and are spoken if that's turned on.
   const { notes, dismiss } = usePushover(pushover, settings.demoNotifications, (fresh) => {
     wake();
-    if (settings.readAloud) readAloud(fresh);
+    readAloud(fresh, settings.readAloudMode);
   });
   const note = notes[0];
   const dismissNote = () => note && dismiss(note);
