@@ -1,16 +1,31 @@
 import { useEffect, useState } from 'react';
+import { AppState } from 'react-native';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-/** Current time, re-rendering right when the minute changes. */
+const minuteOf = (date: Date) => Math.floor(date.getTime() / 60_000);
+
+/**
+ * Current time, re-rendering only when the minute changes. It checks every
+ * second instead of sleeping until the next minute, because iOS pauses timers
+ * while the app is in the background; it also re-checks the moment the app
+ * comes back, so the clock is never stale after waking the phone.
+ */
 export function useNow() {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
-    const msLeft = 60_000 - (now.getSeconds() * 1000 + now.getMilliseconds());
-    const id = setTimeout(() => setNow(new Date()), msLeft);
-    return () => clearTimeout(id);
-  }, [now]);
+    const tick = () => {
+      const next = new Date();
+      setNow((prev) => (minuteOf(prev) === minuteOf(next) ? prev : next));
+    };
+    const id = setInterval(tick, 1000);
+    const sub = AppState.addEventListener('change', (state) => state === 'active' && tick());
+    return () => {
+      clearInterval(id);
+      sub.remove();
+    };
+  }, []);
 
   return now;
 }
