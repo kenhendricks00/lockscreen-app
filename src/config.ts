@@ -17,6 +17,10 @@ export const location = { latitude: 40.71, longitude: -74.01 }; // New York
 // Shown until the first forecast loads, or if the phone is offline.
 export const fallbackWeather = { temp: 61, high: 61, low: 37, code: 0, isDay: true };
 
+// true stops the iPhone from dimming and auto-locking while the app is open,
+// so it works as an always-on display (best on a charger).
+export const keepAwake = true;
+
 // Pushover notifications. Your login secret goes in .env.local (see README),
 // never in this file. The newest notification borrows one spot on the screen
 // until you tap it away; with none pending, the spot looks normal.

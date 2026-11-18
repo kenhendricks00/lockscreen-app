@@ -50,6 +50,7 @@ Everything personal is in **`src/config.ts`**:
 - the verse (`verse`)
 - the weather location (`location`)
 - the offline weather fallback (`fallbackWeather`)
+- whether the screen stays on while the app is open (`keepAwake`, on by default). It's best used on a charger; iPhones with OLED screens can get burn-in if one static image shows for hours every day.
 - the notification settings (`notifications`)
 
 ---
