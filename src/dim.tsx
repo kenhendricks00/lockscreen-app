@@ -9,8 +9,10 @@ const canSetBrightness = Platform.OS !== 'web';
 /**
  * Dims the screen after `seconds` without a touch. `wake()` undims it and
  * restarts the countdown; `dimNow()` dims at once. The real screen brightness
- * is lowered too (to zero when `off`), and put back on wake or when leaving
- * the app, which saves battery.
+ * is lowered too, and put back on wake or when leaving the app, which saves
+ * battery. When `off` it's left alone: black OLED pixels are off at any
+ * brightness, and lowering it would only make the faint notification
+ * unreadable.
  */
 export function useIdleDim(enabled: boolean, seconds: number, off = false) {
   const [dimmed, setDimmed] = useState(false);
@@ -46,7 +48,7 @@ export function useIdleDim(enabled: boolean, seconds: number, off = false) {
   // Lower the real brightness while dimmed; the cleanup puts it back on wake,
   // when leaving the app, or on unmount.
   useEffect(() => {
-    if (!canSetBrightness || !isDimmed) return;
+    if (!canSetBrightness || !isDimmed || off) return;
     let cancelled = false;
     let saved: number | null = null;
 
@@ -54,7 +56,7 @@ export function useIdleDim(enabled: boolean, seconds: number, off = false) {
       .then((level) => {
         if (cancelled) return;
         saved = level;
-        return Brightness.setBrightnessAsync(off ? 0 : Math.min(level, DIM_BRIGHTNESS));
+        return Brightness.setBrightnessAsync(Math.min(level, DIM_BRIGHTNESS));
       })
       .catch(() => {});
 

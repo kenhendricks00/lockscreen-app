@@ -122,7 +122,7 @@ Things to know:
 
 Settings has a **Stealth** section for keeping notifications private from people nearby. **Stealth mode** turns on everything below in one tap. **Restore original** puts all of it back the way the app first worked; your wallpaper, sign-in and other settings aren't touched. A fresh install starts with stealth off.
 
-- **Looks off.** Under *Display → When dimmed*, pick **Looks off**. The dimmed screen goes pure black at the lowest brightness. On an OLED iPhone, black pixels give no light, so the phone looks switched off. The newest notification is drawn faintly on top. It's big enough to read from a foot or two away, but too dim and small to make out from across a room. You can choose:
+- **Looks off.** Under *Display → When dimmed*, pick **Looks off**. The dimmed screen goes pure black. On an OLED iPhone, black pixels give no light at any brightness, so the phone looks switched off; the app leaves the screen brightness alone so the notification stays readable. With auto-brightness on, it gets dimmer in a dark room by itself. The newest notification is drawn faintly on top. It's big enough to read from a foot or two away, but too dim and small to make out from across a room. You can choose:
   - **Text** or **Dot, tap for text**. The dot is small and pulses slowly; tap it to show the text for 10 seconds.
   - Text size, brightness, and a gray, amber or red color.
   - **Preview**, which blacks the screen out at once with a sample notification so you can tune it where you'll use the phone.

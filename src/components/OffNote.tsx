@@ -29,12 +29,12 @@ type Props = { note: PushNote; more: number; now: Date; bottom: number };
  * text for a few seconds.
  */
 export function OffNote({ note, more, now, bottom }: Props) {
-  const { offNoteStyle, offTextSize, offBrightness, offColor, hideText } = useSettings().settings;
+  const { offNoteStyle, offTextSize, offGlow, offColor, hideText } = useSettings().settings;
   // Revealed for one notification id, so a new notification hides it again.
   const [revealedId, setRevealedId] = useState<string | null>(null);
   const revealed = revealedId === note.id;
   const [peeking, setPeeking] = useState(false);
-  const color = `rgba(${COLORS[offColor]}, ${offBrightness})`;
+  const color = `rgba(${COLORS[offColor]}, ${offGlow})`;
   const { x, y } = drift(now);
 
   useEffect(() => {
@@ -98,9 +98,9 @@ function PulsingDot({ color }: { color: string }) {
 
 const styles = StyleSheet.create({
   note: { position: 'absolute', left: '7.5%', right: '7.5%', alignItems: 'center' },
-  title: { ...sans('600'), textAlign: 'center' },
+  title: { ...sans('700'), textAlign: 'center' },
   message: { ...sans('600'), textAlign: 'center' },
   more: { ...sans('500') },
   dotSpot: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  dot: { width: 10, height: 10, borderRadius: 5 },
+  dot: { width: 14, height: 14, borderRadius: 7 },
 });

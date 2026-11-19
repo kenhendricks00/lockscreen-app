@@ -72,8 +72,8 @@ const OFF_NOTE_STYLES: { value: OffNoteStyle; label: string }[] = [
   { value: 'dot', label: 'Dot, tap for text' },
 ];
 
-const OFF_TEXT_SIZES = [22, 26, 30, 34].map((value) => ({ value, label: `${value} pt` }));
-const OFF_BRIGHTNESS = [0.1, 0.15, 0.2, 0.3, 0.4].map((value) => ({
+const OFF_TEXT_SIZES = [26, 30, 34, 40].map((value) => ({ value, label: `${value} pt` }));
+const OFF_GLOW = [0.2, 0.35, 0.5, 0.75, 1].map((value) => ({
   value,
   label: `${Math.round(value * 100)}%`,
 }));
@@ -423,8 +423,9 @@ export function SettingsSheet({ visible, onClose, hiddenNotes, onDismiss, onPrev
             {!settings.alwaysBright && settings.dimStyle === 'off' ? (
               <>
                 <Hint>
-                  The screen goes pure black at the lowest brightness, so an OLED iPhone looks switched
-                  off. The newest notification shows faintly; new ones never wake the screen. Double tap
+                  The screen goes pure black, so an OLED iPhone looks switched off. The screen
+                  brightness isn’t lowered, because black pixels give no light anyway; with
+                  auto-brightness on, the text gets dimmer in a dark room by itself. The newest notification shows faintly; new ones never wake the screen. Double tap
                   to wake it. LCD iPhones (XR, 11, SE) glow gray instead.
                 </Hint>
                 <Text style={formStyles.label}>Notification on the black screen</Text>
@@ -441,9 +442,9 @@ export function SettingsSheet({ visible, onClose, hiddenNotes, onDismiss, onPrev
                 />
                 <Text style={formStyles.label}>Brightness</Text>
                 <Segments
-                  options={OFF_BRIGHTNESS}
-                  value={settings.offBrightness}
-                  onChange={(offBrightness) => update({ offBrightness })}
+                  options={OFF_GLOW}
+                  value={settings.offGlow}
+                  onChange={(offGlow) => update({ offGlow })}
                 />
                 <Text style={formStyles.label}>Color</Text>
                 <Segments

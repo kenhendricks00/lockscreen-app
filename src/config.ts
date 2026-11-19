@@ -27,7 +27,7 @@ export type WakeOnArrival = 'always' | 'priority' | 'never';
 
 // How the idle screen dims:
 //   'darken' - lower brightness and darken the lock screen
-//   'off'    - pure black at minimum brightness, so an OLED iPhone looks
+//   'off'    - pure black, so an OLED iPhone looks
 //              switched off, with the newest notification drawn faintly on top
 export type DimStyle = 'darken' | 'off';
 
@@ -67,8 +67,8 @@ export const defaults = {
   speakDetail: 'full' as SpeakDetail,
   dimStyle: 'darken' as DimStyle,
   offNoteStyle: 'text' as OffNoteStyle,
-  offTextSize: 26,
-  offBrightness: 0.2, // opacity of the text on the black screen
+  offTextSize: 30,
+  offGlow: 0.5, // opacity of the text on the black screen
   offColor: 'gray' as OffColor,
   statusBar: true, // carrier, signal, Wi-Fi and battery along the top
   carrier: '', // iOS doesn't tell apps the carrier name, so type it in Settings
