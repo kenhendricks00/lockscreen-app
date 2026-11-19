@@ -5,7 +5,9 @@ import type { Placement, ReadAloud } from '../config';
 import { type ClockFont, clockFonts, sans } from '../fonts';
 import { deleteWallpaper, pickWallpaper, useSettings } from '../settings';
 import { canDetectHeadphones, previewReadAloud } from '../speech';
+import { type NoteIcon, noteIcons } from '../noteIcons';
 import { findCity } from '../weather';
+import { AppIcon } from './NoteList';
 import { PushoverSignIn } from './PushoverSignIn';
 import { Button, Field, formStyles, Hint, Section, Segments, Toggle } from './SettingsControls';
 
@@ -14,6 +16,14 @@ const PLACEMENTS: { value: Placement; label: string }[] = [
   { value: 'weather', label: 'Weather' },
   { value: 'event', label: 'Event' },
   { value: 'list', label: 'List' },
+];
+
+const NOTE_ICONS: { value: NoteIcon; label: string }[] = [
+  { value: 'app', label: 'App' },
+  ...(Object.keys(noteIcons) as NoteIcon[]).map((value) => ({
+    value,
+    label: value[0].toUpperCase() + value.slice(1),
+  })),
 ];
 
 const READ_ALOUD: { value: ReadAloud; label: string }[] = [
@@ -143,6 +153,28 @@ export function SettingsSheet({ visible, onClose }: { visible: boolean; onClose:
               value={settings.placement}
               onChange={(placement) => update({ placement })}
             />
+            {settings.placement === 'list' && (
+              <>
+                <Text style={formStyles.label}>Notification icon</Text>
+                <View style={styles.icons}>
+                  {NOTE_ICONS.map(({ value, label }) => (
+                    <Pressable
+                      key={value}
+                      onPress={() => update({ noteIcon: value })}
+                      style={[styles.iconChoice, settings.noteIcon === value && styles.iconChosen]}
+                    >
+                      <AppIcon icon={value} pushoverIcon="default" />
+                      <Text style={styles.iconLabel}>{label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <Field
+                  placeholder="Name on notifications (optional)"
+                  value={settings.noteName}
+                  onChangeText={(noteName) => update({ noteName })}
+                />
+              </>
+            )}
             <Text style={formStyles.label}>Read new notifications aloud</Text>
             <Segments
               options={READ_ALOUD}
@@ -221,4 +253,16 @@ const styles = StyleSheet.create({
   heading: { ...sans('700'), fontSize: 28, color: 'white' },
   done: { ...sans('600'), fontSize: 17, color: '#0a84ff' },
   content: { padding: 20, paddingTop: 8, gap: 22 },
+  icons: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  iconChoice: {
+    width: 74,
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  iconChosen: { borderColor: '#0a84ff', backgroundColor: 'rgba(10, 132, 255, 0.15)' },
+  iconLabel: { ...sans('500'), fontSize: 12, color: 'white' },
 });

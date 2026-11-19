@@ -89,6 +89,8 @@ The app can show your [Pushover](https://pushover.net) notifications on the lock
 | **Event** | In place of the calendar event in the top line, with a bell icon |
 | **List** | Every notification as an iOS-style card, with app icon, title, time and message, stacked above the flashlight and camera buttons, newest on top. The list scrolls when it's longer than the space. |
 
+With **List** selected, Settings also lets you pick the **notification icon**. **App** shows the sending app's Pushover icon; the others are generic: Bell, Message, Mail, Calendar, Home, Alert, Star and Heart. You can also type a **name**. With a name, cards use the older iOS layout: the name in bold, then the notification's title, then the message.
+
 When nothing is pending, the screen looks normal: there's no edge text or list, and the weather and event show as usual. Tap a notification to dismiss it.
 
 **Read aloud.** Under **Read new notifications aloud**, pick:

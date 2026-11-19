@@ -1,4 +1,5 @@
 import type { ClockFont } from './fonts';
+import type { NoteIcon } from './noteIcons';
 
 // Defaults for a fresh install. Everything here can be changed on the phone:
 // long-press the lock screen to open Settings. Changes are saved on the device
@@ -27,6 +28,8 @@ export const defaults = {
   placement: 'edge' as Placement,
   demoNotifications: false, // sample notifications, handy for picking a placement
   readAloudMode: 'off' as ReadAloud,
+  noteIcon: 'app' as NoteIcon, // icon on List notifications; 'app' is the sender's own
+  noteName: '', // name on List notifications; blank shows just the title
   // The app never lets the iPhone auto-lock. With alwaysBright off, it dims
   // after dimAfter seconds idle; a tap or a new notification wakes it.
   alwaysBright: false,
