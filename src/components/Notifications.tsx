@@ -3,22 +3,32 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { sans } from '../fonts';
 import type { PushNote } from '../pushover';
+import { useSettings } from '../settings';
+import { usePeek } from '../stealth';
 
 type Props = { note: PushNote; onPress: () => void };
 
-/** A notification dressed as a lock screen widget, for the weather widget's spot. */
+/**
+ * A notification dressed as a lock screen widget, for the weather widget's
+ * spot. Disguised, it drops the bell so it reads like any other widget.
+ */
 export function NoteWidget({ note, onPress }: Props) {
+  const { disguise, hideText } = useSettings().settings;
+  const { peeking, pressProps } = usePeek(onPress);
+
   return (
-    <Pressable onPress={onPress} style={styles.widget}>
+    <Pressable {...pressProps} style={styles.widget}>
       <View style={styles.row}>
-        <MaterialCommunityIcons name="bell" size={17} color="white" style={styles.icon} />
+        {!disguise && <MaterialCommunityIcons name="bell" size={17} color="white" style={styles.icon} />}
         <Text style={[styles.text, styles.title]} numberOfLines={1}>
           {note.title}
         </Text>
       </View>
-      <Text style={styles.text} numberOfLines={2}>
-        {note.message}
-      </Text>
+      {(!hideText || peeking) && (
+        <Text style={styles.text} numberOfLines={2}>
+          {note.message}
+        </Text>
+      )}
     </Pressable>
   );
 }
@@ -32,13 +42,19 @@ const EDGE_THICKNESS = 18;
  * rotates it around its center, hence the offsets.
  */
 export function EdgeNote({ note, onPress, bottom }: Props & { bottom: number }) {
+  const { disguise, hideText } = useSettings().settings;
+  const { peeking, pressProps } = usePeek(onPress);
+  const showMessage = !hideText || peeking;
+
   return (
     <Pressable
-      onPress={onPress}
+      {...pressProps}
       style={[styles.edge, { bottom: bottom + (EDGE_LENGTH - EDGE_THICKNESS) / 2 }]}
     >
-      <Text style={styles.edgeText} numberOfLines={1}>
-        {note.title}: {note.message}
+      {/* Disguised, it's small and faint: easy to miss unless you know it's there. */}
+      <Text style={[styles.edgeText, disguise && styles.edgeFaint]} numberOfLines={1}>
+        {note.title}
+        {showMessage && `: ${note.message}`}
       </Text>
     </Pressable>
   );
@@ -71,4 +87,5 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.35)',
     textShadowRadius: 3,
   },
+  edgeFaint: { fontSize: 10, color: 'rgba(255, 255, 255, 0.35)', textShadowRadius: 0 },
 });

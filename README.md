@@ -59,7 +59,7 @@ Press and hold anywhere on the lock screen to open **Settings**. There you can:
 - Pick where **Pushover notifications** show, and turn sample notifications on to preview them.
 - Show or hide the **status bar** along the top, and type your **carrier name** for it. Battery and Wi-Fi are live. iOS doesn't let apps read the carrier name or signal strength, so you type the carrier yourself and the signal bars always show full.
 - Choose how the screen behaves. While the app is open, the iPhone never auto-locks:
-  - **Keep screen bright** off (the default): after the **Dim after** time with no touches (15 seconds to 5 minutes), the screen dims like an always-on display. It lowers the real brightness and darkens the picture. A tap, or a new Pushover notification, wakes it. The first tap only wakes the screen, so it can't switch on the flashlight by accident.
+  - **Keep screen bright** off (the default): after the **Dim after** time with no touches (15 seconds to 5 minutes), the screen dims like an always-on display. It lowers the real brightness and darkens the picture. A tap, or a new Pushover notification, wakes it (see [Stealth](#stealth) to change that). The first tap only wakes the screen, so it can't switch on the flashlight by accident.
   - **Keep screen bright** on: the screen stays at full brightness.
 
   Either way it's best used on a charger. iPhones with OLED screens can get burn-in if one static image shows for hours every day, and dimming helps with that.
@@ -117,6 +117,26 @@ Things to know:
 - **Deleting the app forgets the sign-in.** After a reinstall, connect again; it registers a fresh device. You can remove old devices at <https://pushover.net>.
 - **Pushover licensing:** Pushover counts an Open Client device as a *desktop* device. After 30 days you need the one-time Pushover for Desktop license.
 - **On the web preview** the sign-in isn't remembered, because there's no Keychain.
+
+### Stealth
+
+Settings has a **Stealth** section for keeping notifications private from people nearby. **Stealth mode** turns on everything below in one tap. **Restore original** puts all of it back the way the app first worked; your wallpaper, sign-in and other settings aren't touched. A fresh install starts with stealth off.
+
+- **Looks off.** Under *Display → When dimmed*, pick **Looks off**. The dimmed screen goes pure black at the lowest brightness. On an OLED iPhone, black pixels give no light, so the phone looks switched off. The newest notification is drawn faintly on top. It's big enough to read from a foot or two away, but too dim and small to make out from across a room. You can choose:
+  - **Text** or **Dot, tap for text**. The dot is small and pulses slowly; tap it to show the text for 10 seconds.
+  - Text size, brightness, and a gray, amber or red color.
+  - **Preview**, which blacks the screen out at once with a sample notification so you can tune it where you'll use the phone.
+
+  New notifications never wake this screen, and waking it takes a **double tap**, so brushing the phone doesn't light it up. The text moves a few points every minute so it doesn't burn in. In the installed app, iOS also hides its home indicator bar a few seconds after the last touch; Expo Go can't. LCD iPhones (XR, 11, SE) light the whole screen from behind, so black shows as a gray glow there.
+- **Wake the screen for new notifications:** Always, High priority (Pushover priority 1 and 2), or Never.
+- **Follow Pushover priority.** Priority −1 shows without waking, buzzing or speaking. Priority −2 stays off the lock screen and is listed in Settings instead. The sender chooses priority per message.
+- **Disguise notifications.** No bell icons. In the event spot a notification looks like a calendar event, with its arrival time in front of it. Edge text is small and faint.
+- **Hide message text.** Only the title shows. Press and hold a notification to read it; letting go hides it again. A tap still dismisses it.
+- **Buzz when one arrives.** A short vibration instead of, or as well as, waking the screen.
+- **Hide notifications after** 5 minutes, 30 minutes or an hour, as well as by tapping. Auto-hiding doesn't acknowledge emergency notifications; only a tap does.
+- **Keep notifications after restart.** Turn this off to keep notifications in memory only. The saved copy is erased, and they're gone when the app closes.
+- **Rename senders.** One `match = label` per line, such as `Bank = Reminder`. When the left side appears in the sending app's name or the title, the title shows the label instead, on screen and when read aloud.
+- **What's read** (under read-aloud): everything, the title only, or **Private**, which says just "New notification" out loud and reads the full text only into headphones.
 
 ---
 
@@ -191,7 +211,10 @@ src/time.ts                  live clock and date (updates on the minute and on w
 src/weather.ts               Open-Meteo forecast with an offline fallback
 src/pushover.ts              tiny Pushover Open Client: sign-in, WebSocket, REST
 src/speech.ts                read-aloud
+src/stealth.ts               stealth helpers: aliases, priority rules, peeking
+src/dim.tsx                  idle dimming, including the black "looks off" screen
 modules/audio-route/         tiny native module: are headphones connected?
+modules/home-indicator/      tiny native module: let iOS auto-hide the home indicator
 src/components/              clock, date line, widgets, buttons, notifications, settings
 scripts/make_wallpaper.py    erases the overlays from a lock screen screenshot
 scripts/build-unsigned-ipa.sh  unsigned .ipa build used by EAS and GitHub Actions
@@ -210,7 +233,7 @@ scripts/build-unsigned-ipa.sh  unsigned .ipa build used by EAS and GitHub Action
 
 **Flashlight.** On a real iPhone, the flashlight button turns on the actual torch. This uses expo-camera and asks for camera permission the first time. On web it only animates. The camera button only animates.
 
-**Home indicator.** iOS draws the real home indicator on top of every app, so the app draws its own bar only on web and Android.
+**Home indicator.** iOS draws the real home indicator on top of every app, so the app draws its own bar only on web and Android. While the "looks off" screen is up, `modules/home-indicator` lets iOS hide the real one after a few seconds without touches.
 
 ## Checks
 

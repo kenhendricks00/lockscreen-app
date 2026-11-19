@@ -3,14 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Animated, AppState, Platform, Pressable, StyleSheet } from 'react-native';
 
 const DIM_BRIGHTNESS = 0.05;
+const DOUBLE_TAP_MS = 350;
 const canSetBrightness = Platform.OS !== 'web';
 
 /**
  * Dims the screen after `seconds` without a touch. `wake()` undims it and
- * restarts the countdown. The real screen brightness is lowered too (and put
- * back on wake or when leaving the app), which saves battery.
+ * restarts the countdown; `dimNow()` dims at once. The real screen brightness
+ * is lowered too (to zero when `off`), and put back on wake or when leaving
+ * the app, which saves battery.
  */
-export function useIdleDim(enabled: boolean, seconds: number) {
+export function useIdleDim(enabled: boolean, seconds: number, off = false) {
   const [dimmed, setDimmed] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -23,6 +25,11 @@ export function useIdleDim(enabled: boolean, seconds: number) {
     setDimmed(false);
     startCountdown();
   }, [startCountdown]);
+
+  const dimNow = useCallback(() => {
+    clearTimeout(timer.current);
+    setDimmed(true);
+  }, []);
 
   useEffect(() => {
     startCountdown();
@@ -47,7 +54,7 @@ export function useIdleDim(enabled: boolean, seconds: number) {
       .then((level) => {
         if (cancelled) return;
         saved = level;
-        return Brightness.setBrightnessAsync(Math.min(level, DIM_BRIGHTNESS));
+        return Brightness.setBrightnessAsync(off ? 0 : Math.min(level, DIM_BRIGHTNESS));
       })
       .catch(() => {});
 
@@ -55,26 +62,43 @@ export function useIdleDim(enabled: boolean, seconds: number) {
       cancelled = true;
       if (saved !== null) Brightness.setBrightnessAsync(saved).catch(() => {});
     };
-  }, [isDimmed]);
+  }, [isDimmed, off]);
 
-  return { dimmed: isDimmed, wake };
+  return { dimmed: isDimmed, wake, dimNow };
 }
 
-/** Dark layer over the lock screen while dimmed; the first tap only wakes it. */
-export function DimOverlay({ dimmed, onWake }: { dimmed: boolean; onWake: () => void }) {
+type OverlayProps = { dimmed: boolean; off: boolean; onWake: () => void };
+
+/**
+ * Dark layer over the lock screen while dimmed; the first tap only wakes it.
+ * When `off`, it's pure black (OLED pixels switch off, so the phone looks
+ * off) and waking takes a double tap, so brushing the phone doesn't light it.
+ */
+export function DimOverlay({ dimmed, off, onWake }: OverlayProps) {
   const [opacity] = useState(() => new Animated.Value(0));
+  const lastTap = useRef(0);
 
   useEffect(() => {
     Animated.timing(opacity, {
-      toValue: dimmed ? 0.45 : 0,
+      toValue: dimmed ? (off ? 1 : 0.45) : 0,
       duration: dimmed ? 1200 : 200,
       useNativeDriver: canSetBrightness,
     }).start();
-  }, [dimmed, opacity]);
+  }, [dimmed, off, opacity]);
+
+  const onPress = () => {
+    const now = Date.now();
+    if (!off || now - lastTap.current < DOUBLE_TAP_MS) {
+      lastTap.current = 0;
+      onWake();
+    } else {
+      lastTap.current = now;
+    }
+  };
 
   return (
     <Animated.View style={[styles.overlay, { opacity }]} pointerEvents={dimmed ? 'auto' : 'none'}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onWake} />
+      <Pressable style={StyleSheet.absoluteFill} onPress={onPress} />
     </Animated.View>
   );
 }

@@ -3,7 +3,7 @@ import * as Speech from 'expo-speech';
 import { Platform } from 'react-native';
 
 import { canDetectHeadphones, headphonesConnected } from '../modules/audio-route';
-import type { ReadAloud } from './config';
+import type { ReadAloud, SpeakDetail } from './config';
 import type { PushNote } from './pushover';
 
 export { canDetectHeadphones };
@@ -28,11 +28,20 @@ export function previewReadAloud(mode: ReadAloud) {
   if (allowed(mode)) say('New notifications will be read aloud.');
 }
 
-/** Reads new notifications aloud, oldest first; a big backlog is summarized. */
-export function readAloud(fresh: PushNote[], mode: ReadAloud) {
-  if (!allowed(mode)) return;
+const plural = (n: number) => `${n} notification${n === 1 ? '' : 's'}`;
+
+/**
+ * Reads new notifications aloud, oldest first; a big backlog is summarized.
+ * 'private' says only "New notification" unless headphones are connected.
+ */
+export function readAloud(fresh: PushNote[], mode: ReadAloud, detail: SpeakDetail) {
+  if (fresh.length === 0 || !allowed(mode)) return;
+  if (detail === 'private' && !headphonesConnected()) {
+    say(fresh.length === 1 ? 'New notification.' : `${plural(fresh.length)}.`);
+    return;
+  }
   const newest = fresh.slice(0, MAX_READ).reverse();
-  newest.forEach((note) => say(`${note.title}. ${note.message}`));
+  newest.forEach((note) => say(detail === 'title' ? note.title : `${note.title}. ${note.message}`));
   const rest = fresh.length - newest.length;
-  if (rest > 0) say(`And ${rest} more notification${rest === 1 ? '' : 's'}.`);
+  if (rest > 0) say(`And ${rest} more ${rest === 1 ? 'notification' : 'notifications'}.`);
 }

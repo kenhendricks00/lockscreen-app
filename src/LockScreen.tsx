@@ -1,5 +1,6 @@
+import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,21 +9,30 @@ import { DateLine } from './components/DateLine';
 import { LockStatusBar } from './components/LockStatusBar';
 import { NoteList } from './components/NoteList';
 import { EdgeNote, NoteWidget } from './components/Notifications';
+import { OffNote } from './components/OffNote';
 import { CameraButton, FlashlightButton } from './components/QuickButtons';
 import { SettingsSheet } from './components/SettingsSheet';
 import { VerseWidget } from './components/VerseWidget';
 import { WeatherWidget } from './components/WeatherWidget';
 import type { Placement } from './config';
 import { DimOverlay, useIdleDim } from './dim';
-import { usePushover } from './pushover';
+import { setHomeIndicatorAutoHidden } from '../modules/home-indicator';
+import { type PushNote, usePushover } from './pushover';
 import { useSettings } from './settings';
 import { readAloud } from './speech';
+import { applyAlias, isHidden, isQuiet, parseAliases, shouldWake } from './stealth';
 import { useNow } from './time';
 
 const defaultWallpaper = require('../assets/wallpaper.jpg');
 const BUTTONS_OFFSET = 24; // flashlight/camera row, above the bottom safe area
 const BUTTON_SIZE = 58;
 const WIDGETS_BOTTOM = 280; // below the safe area top: date line, clock and widgets
+const PREVIEW_NOTE: PushNote = {
+  id: 'preview',
+  title: 'Front door',
+  message: 'A package was delivered to the porch.',
+  date: 0,
+};
 
 // Offsets were measured on a 428x926 pt iPhone (notch, 47 pt top inset) and
 // are applied relative to the safe area, so Dynamic Island phones shift
@@ -35,17 +45,63 @@ export function LockScreen() {
   const bottom = Math.max(insets.bottom, 34);
   const { settings, pushover } = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
 
   // Never let the iPhone auto-lock; dim when idle instead (unless always bright).
   useKeepAwake();
-  const { dimmed, wake } = useIdleDim(!settings.alwaysBright && !settingsOpen, settings.dimAfter);
+  const offStyle = settings.dimStyle === 'off';
+  const idle = useIdleDim(!settings.alwaysBright && !settingsOpen, settings.dimAfter, offStyle);
+  const { dimmed } = idle;
+  const wake = () => {
+    setPreviewing(false);
+    idle.wake();
+  };
+  const screenOff = dimmed && offStyle;
 
-  // New notifications wake a dimmed screen, and are spoken if that's turned on.
-  const { notes, dismiss } = usePushover(pushover, settings.demoNotifications, (fresh) => {
-    wake();
-    readAloud(fresh, settings.readAloudMode);
-  });
+  // iOS hides its home indicator bar a few seconds after the last touch, but
+  // only while the black "off" screen is up (needs the installed app).
+  useEffect(() => setHomeIndicatorAutoHidden(screenOff), [screenOff]);
+
+  // New notifications may wake a dimmed screen, buzz, and be spoken. Quiet
+  // ones (Pushover priority -1 and -2, when followed) do none of that.
+  const { notes: allNotes, dismiss } = usePushover(
+    pushover,
+    {
+      demo: settings.demoNotifications,
+      remember: settings.rememberNotes,
+      autoHide: settings.autoHide,
+    },
+    (fresh) => {
+      const loud = fresh.filter((n) => !isQuiet(n, settings));
+      if (shouldWake(loud, settings)) idle.wake();
+      if (loud.length > 0 && settings.haptic) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+      const aliases = parseAliases(settings.aliases);
+      readAloud(
+        loud.map((n) => applyAlias(n, aliases)),
+        settings.readAloudMode,
+        settings.speakDetail,
+      );
+    },
+  );
+
+  // Aliases rename titles everywhere; priority -2 notes only show in Settings.
+  const aliased = useMemo(() => {
+    const aliases = parseAliases(settings.aliases);
+    return allNotes.map((n) => applyAlias(n, aliases));
+  }, [allNotes, settings.aliases]);
+  const notes = aliased.filter((n) => !isHidden(n, settings));
+  const hiddenNotes = aliased.filter((n) => isHidden(n, settings));
+
+  const previewOffScreen = () => {
+    setSettingsOpen(false);
+    setPreviewing(true);
+    idle.dimNow();
+  };
+
   const note = notes[0];
+  const offNote = note ?? (previewing ? PREVIEW_NOTE : undefined);
   const dismissNote = () => note && dismiss(note);
   const noteAt = (spot: Placement) => (settings.placement === spot ? note : undefined);
 
@@ -58,7 +114,7 @@ export function LockScreen() {
       {/* Long-press anywhere opens Settings, like customizing the real lock screen. */}
       <Pressable
         style={styles.screen}
-        onTouchStart={wake}
+        onTouchStart={() => !dimmed && idle.wake()}
         onLongPress={() => setSettingsOpen(true)}
         delayLongPress={600}
       >
@@ -93,9 +149,18 @@ export function LockScreen() {
 
         {/* iPhones draw the real home indicator on top of every app. */}
         {Platform.OS !== 'ios' && <View style={styles.homeIndicator} />}
-        <DimOverlay dimmed={dimmed} onWake={wake} />
+        <DimOverlay dimmed={dimmed} off={offStyle} onWake={wake} />
+        {screenOff && offNote && (
+          <OffNote note={offNote} more={Math.max(notes.length - 1, 0)} now={now} bottom={bottom} />
+        )}
       </Pressable>
-      <SettingsSheet visible={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsSheet
+        visible={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        hiddenNotes={hiddenNotes}
+        onDismiss={dismiss}
+        onPreviewOff={previewOffScreen}
+      />
     </>
   );
 }
