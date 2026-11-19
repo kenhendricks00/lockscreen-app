@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock } from './components/Clock';
 import { DateLine } from './components/DateLine';
 import { LockStatusBar } from './components/LockStatusBar';
+import { NoteList } from './components/NoteList';
 import { EdgeNote, NoteWidget } from './components/Notifications';
 import { CameraButton, FlashlightButton } from './components/QuickButtons';
 import { SettingsSheet } from './components/SettingsSheet';
@@ -20,6 +21,8 @@ import { useNow } from './time';
 
 const defaultWallpaper = require('../assets/wallpaper.jpg');
 const BUTTONS_OFFSET = 24; // flashlight/camera row, above the bottom safe area
+const BUTTON_SIZE = 58;
+const WIDGETS_BOTTOM = 280; // below the safe area top: date line, clock and widgets
 
 // Offsets were measured on a 428x926 pt iPhone (notch, 47 pt top inset) and
 // are applied relative to the safe area, so Dynamic Island phones shift
@@ -71,6 +74,17 @@ export function LockScreen() {
         </View>
 
         {edgeNote && <EdgeNote note={edgeNote} onPress={dismissNote} bottom={bottom + BUTTONS_OFFSET} />}
+        {settings.placement === 'list' && (
+          <NoteList
+            notes={notes}
+            now={now}
+            onDismiss={dismiss}
+            style={[
+              styles.list,
+              { top: top + WIDGETS_BOTTOM, bottom: bottom + BUTTONS_OFFSET + BUTTON_SIZE + 16 },
+            ]}
+          />
+        )}
 
         <View style={[styles.buttons, { bottom: bottom + BUTTONS_OFFSET }]}>
           <FlashlightButton />
@@ -96,6 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 8,
   },
+  list: { position: 'absolute', left: 10, right: 10 },
   buttons: {
     position: 'absolute',
     left: 53,

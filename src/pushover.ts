@@ -9,8 +9,11 @@ export type PushNote = {
   title: string;
   message: string;
   date: number; // unix seconds
+  icon?: string; // the sending app's Pushover icon name
   receipt?: string; // set on unacknowledged emergency-priority messages
 };
+
+export const iconUrl = (icon: string) => `https://api.pushover.net/icons/${icon}.png`;
 
 export type PushoverAccount = { secret: string; deviceId: string };
 
@@ -90,6 +93,7 @@ type RawMessage = {
   title?: string;
   message: string;
   app: string;
+  icon: string;
   date: number;
   priority: number;
   acked?: number;
@@ -102,6 +106,7 @@ const toNote = (m: RawMessage): PushNote => ({
   title: m.title || m.app,
   message: m.html ? m.message.replace(/<[^>]+>/g, '') : m.message,
   date: m.date,
+  icon: m.icon,
   receipt: m.priority >= 2 && m.acked !== 1 ? m.receipt : undefined,
 });
 

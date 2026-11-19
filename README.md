@@ -8,7 +8,7 @@ An iOS-style lock screen as an Expo (React Native + TypeScript) app:
 - live weather for your city and a Bible verse widget
 - a status bar with live battery and Wi-Fi
 - flashlight and camera buttons
-- Pushover notifications, shown up the left edge, in the weather widget's spot, or in the top line
+- Pushover notifications, shown up the left edge, in the weather widget's spot, in the top line, or as an iOS-style list
 
 Everything personal is set on the phone, in Settings, and stays there.
 
@@ -16,9 +16,9 @@ Everything personal is set on the phone, in Settings, and stays there.
 | --- | --- |
 | ![](screenshots/app.png) | ![](screenshots/settings.png) |
 
-| Notification: edge | Weather spot | Event spot |
-| --- | --- | --- |
-| ![](screenshots/notifications-edge.png) | ![](screenshots/notifications-weather.png) | ![](screenshots/notifications-event.png) |
+| Notification: edge | Weather spot | Event spot | List |
+| --- | --- | --- | --- |
+| ![](screenshots/notifications-edge.png) | ![](screenshots/notifications-weather.png) | ![](screenshots/notifications-event.png) | ![](screenshots/notifications-list.png) |
 
 You don't need a Mac for any of this.
 
@@ -80,15 +80,16 @@ Then get `wallpaper.jpg` onto the phone, for example through iCloud Drive, save 
 
 The app can show your [Pushover](https://pushover.net) notifications on the lock screen. It is an **unofficial Pushover Open Client**: it registers itself as an extra Pushover "device" and receives messages live over Pushover's WebSocket.
 
-**Pick a spot.** The newest notification borrows one spot on the screen. Choose it in Settings, under *Pushover notifications*:
+**Pick a spot.** Choose where notifications show in Settings, under *Pushover notifications*. The first three spots borrow one place on the screen for the newest notification. **List** shows all of them:
 
 | Option | Where it shows |
 | --- | --- |
-| **Left edge** | Small sideways text running up the left edge, ending beside the flashlight |
-| **Weather spot** | In place of the weather widget, styled like a widget |
-| **Event line** | In place of the calendar event in the top line, with a bell icon |
+| **Edge** | Small sideways text running up the left edge, ending beside the flashlight |
+| **Weather** | In place of the weather widget, styled like a widget |
+| **Event** | In place of the calendar event in the top line, with a bell icon |
+| **List** | Every notification as an iOS-style card, with app icon, title, time and message, stacked above the flashlight and camera buttons, newest on top. The list scrolls when it's longer than the space. |
 
-When nothing is pending, the spot looks normal: there's no edge text, and the weather and event show as usual. Tap the notification to dismiss it and see the next one.
+When nothing is pending, the screen looks normal: there's no edge text or list, and the weather and event show as usual. Tap a notification to dismiss it.
 
 **Read aloud.** Under **Read new notifications aloud**, pick:
 

@@ -4,11 +4,12 @@ import type { ClockFont } from './fonts';
 // long-press the lock screen to open Settings. Changes are saved on the device
 // only, so nothing personal ever needs to go in this file.
 
-// Where the newest Pushover notification shows up (see README).
-//   'edge'    - small sideways text running up the left edge
-//   'weather' - takes the weather widget's place
-//   'event'   - takes the calendar event's place in the top line
-export type Placement = 'edge' | 'weather' | 'event';
+// Where Pushover notifications show up (see README).
+//   'edge'    - the newest as small sideways text running up the left edge
+//   'weather' - the newest in the weather widget's place
+//   'event'   - the newest in the calendar event's place in the top line
+//   'list'    - all of them as iOS-style cards above the buttons
+export type Placement = 'edge' | 'weather' | 'event' | 'list';
 
 // When new notifications are spoken: never, always, or only with headphones on.
 export type ReadAloud = 'off' | 'always' | 'headphones';

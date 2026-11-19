@@ -10,9 +10,10 @@ import { PushoverSignIn } from './PushoverSignIn';
 import { Button, Field, formStyles, Hint, Section, Segments, Toggle } from './SettingsControls';
 
 const PLACEMENTS: { value: Placement; label: string }[] = [
-  { value: 'edge', label: 'Left edge' },
-  { value: 'weather', label: 'Weather spot' },
-  { value: 'event', label: 'Event line' },
+  { value: 'edge', label: 'Edge' },
+  { value: 'weather', label: 'Weather' },
+  { value: 'event', label: 'Event' },
+  { value: 'list', label: 'List' },
 ];
 
 const READ_ALOUD: { value: ReadAloud; label: string }[] = [
