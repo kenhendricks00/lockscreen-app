@@ -45,3 +45,5 @@ reference/
 
 # downloaded .ipa builds
 /build/
+watch/*.xcodeproj
+watch/Info.plist

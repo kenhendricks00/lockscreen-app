@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useKeepAwake } from 'expo-keep-awake';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,6 +17,7 @@ import { WeatherWidget } from './components/WeatherWidget';
 import type { Placement } from './config';
 import { DimOverlay, useIdleDim } from './dim';
 import { setHomeIndicatorAutoHidden } from '../modules/home-indicator';
+import { onWatchDismiss, sendToWatch } from '../modules/watch-bridge';
 import { type PushNote, usePushover } from './pushover';
 import { useSettings } from './settings';
 import { readAloud } from './speech';
@@ -94,6 +95,44 @@ export function LockScreen() {
   }, [allNotes, settings.aliases]);
   const notes = aliased.filter((n) => !isHidden(n, settings));
   const hiddenNotes = aliased.filter((n) => isHidden(n, settings));
+
+  // Apple Watch: mirror the newest notifications and the watch settings.
+  // Comparing the JSON means it's only sent when something actually changed.
+  const watchJson = JSON.stringify({
+    notes: notes.slice(0, 5).map((n) => ({
+      id: n.id,
+      title: n.title,
+      message: n.message,
+      date: n.received ?? n.date,
+    })),
+    screen: settings.watchScreen,
+    complication: settings.watchComplication,
+    glow: settings.offGlow,
+    hideText: settings.hideText,
+    haptic: settings.haptic,
+  });
+  const watchNewest = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const state = JSON.parse(watchJson);
+    const newest: string | undefined = state.notes[0]?.id;
+    // Only a newly arrived notification spends the complication refresh budget.
+    const arrived = newest !== undefined && newest !== watchNewest.current;
+    watchNewest.current = newest;
+    sendToWatch(state, arrived);
+  }, [watchJson]);
+
+  // Swiping a notification away on the watch dismisses it here too.
+  const latest = useRef({ allNotes, dismiss });
+  useEffect(() => {
+    latest.current = { allNotes, dismiss };
+  });
+  useEffect(() => {
+    const sub = onWatchDismiss((id) => {
+      const note = latest.current.allNotes.find((n) => n.id === id);
+      if (note) latest.current.dismiss(note);
+    });
+    return () => sub.remove();
+  }, []);
 
   const previewOffScreen = () => {
     setSettingsOpen(false);

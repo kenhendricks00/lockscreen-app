@@ -23,6 +23,9 @@ jobs:
 
       - run: npm ci
 
+      # Generates the Apple Watch app's Xcode project (see watch/project.yml).
+      - run: brew install xcodegen
+
       - name: Generate the native iOS project
         run: npx expo prebuild --platform ios --clean
 
