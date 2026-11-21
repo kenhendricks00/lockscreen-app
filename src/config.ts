@@ -35,6 +35,13 @@ export type DimStyle = 'darken' | 'off';
 export type OffNoteStyle = 'text' | 'dot';
 export type OffColor = 'gray' | 'amber' | 'red';
 
+// The Apple Watch app's screen, and what its watch-face complication shows:
+//   'title' - the newest notification's title
+//   'count' - how many are waiting
+//   'dot'   - a dot when anything is waiting
+export type WatchScreen = 'normal' | 'off';
+export type WatchComplication = 'title' | 'count' | 'dot';
+
 export const defaults = {
   wallpaper: null as string | null, // a photo picked in Settings; null uses assets/wallpaper.jpg
   clockFont: 'serif' as ClockFont,
@@ -71,6 +78,8 @@ export const defaults = {
   offTextSize: 30,
   offGlow: 0.5, // opacity of the text on the black screen
   offColor: 'gray' as OffColor,
+  watchScreen: 'normal' as WatchScreen,
+  watchComplication: 'title' as WatchComplication,
   statusBar: true, // carrier, signal, Wi-Fi and battery along the top
   carrier: '', // iOS doesn't tell apps the carrier name, so type it in Settings
 };
@@ -88,6 +97,8 @@ export const stealthPreset: Partial<Settings> = {
   haptic: true,
   speakDetail: 'private',
   dimStyle: 'off',
+  watchScreen: 'off',
+  watchComplication: 'dot',
   alwaysBright: false,
 };
 

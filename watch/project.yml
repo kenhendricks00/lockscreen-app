@@ -1,0 +1,32 @@
+# XcodeGen spec for the Apple Watch companion app. scripts/build-unsigned-ipa.sh
+# generates the Xcode project from this, builds it, and puts the watch app
+# inside the iPhone app. It targets watchOS 8 and builds for both the Series 3
+# (armv7k) and every later watch (arm64_32).
+name: LockScreenWatch
+options:
+  deploymentTarget:
+    watchOS: "8.0"
+targets:
+  LockScreenWatch:
+    type: application
+    platform: watchOS
+    sources: [Sources]
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Lock Screen
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        # A single-target watch app (no WatchKit extension) for the iPhone app below.
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.kenneth.lockscreen
+        WKRunsIndependentlyOfCompanionApp: false
+        CLKComplicationPrincipalClass: ComplicationController
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kenneth.lockscreen.watchkitapp
+        PRODUCT_NAME: LockScreenWatch
+        SWIFT_VERSION: "5.0"
+        ARCHS: "armv7k arm64_32"
+        ONLY_ACTIVE_ARCH: false
+        TARGETED_DEVICE_FAMILY: "4"

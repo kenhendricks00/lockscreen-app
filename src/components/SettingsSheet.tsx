@@ -11,7 +11,10 @@ import {
   type SpeakDetail,
   stealthPreset,
   type WakeOnArrival,
+  type WatchComplication,
+  type WatchScreen,
 } from '../config';
+import { canUseWatch } from '../../modules/watch-bridge';
 import { type ClockFont, clockFonts, sans } from '../fonts';
 import { deleteWallpaper, pickWallpaper, useSettings } from '../settings';
 import { canDetectHeadphones, previewReadAloud } from '../speech';
@@ -85,6 +88,17 @@ const OFF_COLORS: { value: OffColor; label: string }[] = [
   { value: 'gray', label: 'Gray' },
   { value: 'amber', label: 'Amber' },
   { value: 'red', label: 'Red' },
+];
+
+const WATCH_SCREENS: { value: WatchScreen; label: string }[] = [
+  { value: 'normal', label: 'List' },
+  { value: 'off', label: 'Looks off' },
+];
+
+const WATCH_COMPLICATIONS: { value: WatchComplication; label: string }[] = [
+  { value: 'title', label: 'Title' },
+  { value: 'count', label: 'Count' },
+  { value: 'dot', label: 'Dot' },
 ];
 
 const CLOCK_FONTS = (Object.keys(clockFonts) as ClockFont[]).map((value) => ({
@@ -397,6 +411,33 @@ export function SettingsSheet({ visible, onClose, hiddenNotes, onDismiss, onPrev
                 <Hint>Tap one to dismiss it.</Hint>
               </>
             )}
+          </Section>
+
+          <Section title="Apple Watch">
+            <Text style={formStyles.label}>Watch app screen</Text>
+            <Segments
+              options={WATCH_SCREENS}
+              value={settings.watchScreen}
+              onChange={(watchScreen) => update({ watchScreen })}
+            />
+            {settings.watchScreen === 'off' && (
+              <Hint>
+                Black, so the watch looks asleep, with the newest notification shown faintly at the
+                same brightness as the iPhone’s Looks off screen. Tap it to peek at a hidden message;
+                double tap for the full list.
+              </Hint>
+            )}
+            <Text style={formStyles.label}>Watch face complication shows</Text>
+            <Segments
+              options={WATCH_COMPLICATIONS}
+              value={settings.watchComplication}
+              onChange={(watchComplication) => update({ watchComplication })}
+            />
+            <Hint>
+              {canUseWatch
+                ? 'Notifications reach the watch through this app, so it has to be open on the iPhone. The complication is hidden while the watch is locked.'
+                : 'The watch app is only in the installed app, not in Expo Go.'}
+            </Hint>
           </Section>
 
           <Section title="Display">
