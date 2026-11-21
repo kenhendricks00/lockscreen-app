@@ -138,6 +138,21 @@ Settings has a **Stealth** section for keeping notifications private from people
 - **Rename senders.** One `match = label` per line, such as `Bank = Reminder`. When the left side appears in the sending app's name or the title, the title shows the label instead, on screen and when read aloud.
 - **What's read** (under read-aloud): everything, the title only, or **Private**, which says just "New notification" out loud and reads the full text only into headphones.
 
+### Apple Watch
+
+The .ipa includes a small Apple Watch app for watchOS 8 and later, including the Series 3. watchOS doesn't let apps keep the Pushover connection open themselves, so **the iPhone app relays notifications to the watch**. The iPhone app has to be open for new ones to arrive, which it already is when you use it as your lock screen.
+
+Set it up in Settings, under **Apple Watch**:
+
+- **Watch app screen:** **List** shows every notification; tap one to show a hidden message, swipe it away to dismiss it on the iPhone too. **Looks off** is pure black, so the watch looks asleep, with the newest notification drawn faintly at the same brightness as the iPhone's Looks off screen. Tap it to peek at a hidden message, double tap for the list.
+- **Watch face complication shows:** the newest notification's **Title**, a **Count**, or just a **Dot** when something is waiting. It's empty when nothing is. On large faces, Title also shows the message, unless **Hide message text** is on. The complication is hidden while the watch is locked.
+
+**Hide message text** and **Buzz when one arrives** from the Stealth section apply to the watch too. The watch only buzzes while its app is on screen. **Stealth mode** switches the watch to Looks off with a Dot complication.
+
+To add the complication, long-press the watch face, tap **Edit**, swipe to the complications, and pick **Lock Screen**. To keep the app on screen after you raise your wrist, set **Settings → General → Return to Clock → Lock Screen → Return to App** on the watch.
+
+The watch app installs with the iPhone app. If it doesn't appear, open the **Watch** app on the iPhone and install **Lock Screen** under *Available Apps*. Whether AltStore and SideStore install a sideloaded watch app isn't documented, so this may not work with every sideloading tool. It also uses one more of a free Apple ID's 10 app IDs a week.
+
 ---
 
 ## 3. Get an .ipa without a Mac
@@ -215,6 +230,8 @@ src/stealth.ts               stealth helpers: aliases, priority rules, peeking
 src/dim.tsx                  idle dimming, including the black "looks off" screen
 modules/audio-route/         tiny native module: are headphones connected?
 modules/home-indicator/      tiny native module: let iOS auto-hide the home indicator
+modules/watch-bridge/        tiny native module: relay notifications to the watch
+watch/                       the Apple Watch app (SwiftUI + ClockKit), built with XcodeGen
 src/components/              clock, date line, widgets, buttons, notifications, settings
 scripts/make_wallpaper.py    erases the overlays from a lock screen screenshot
 scripts/build-unsigned-ipa.sh  unsigned .ipa build used by EAS and GitHub Actions

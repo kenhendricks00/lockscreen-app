@@ -423,8 +423,8 @@ export function SettingsSheet({ visible, onClose, hiddenNotes, onDismiss, onPrev
             {settings.watchScreen === 'off' && (
               <Hint>
                 Black, so the watch looks asleep, with the newest notification shown faintly at the
-                Brightness set under Display. Tap it to peek at a hidden message; double tap for the
-                full list.
+                same brightness as the iPhone’s Looks off screen. Tap it to peek at a hidden message;
+                double tap for the full list.
               </Hint>
             )}
             <Text style={formStyles.label}>Watch face complication shows</Text>
