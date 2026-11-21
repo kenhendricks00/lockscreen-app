@@ -82,6 +82,7 @@ export function LockScreen() {
         loud.map((n) => applyAlias(n, aliases)),
         settings.readAloudMode,
         settings.speakDetail,
+        settings.speechRate,
       );
     },
   );

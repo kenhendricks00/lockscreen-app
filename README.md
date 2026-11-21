@@ -99,7 +99,7 @@ When nothing is pending, the screen looks normal: there's no edge text or list, 
 - **Always**: each new notification ("title. message") is spoken as it arrives.
 - **Headphones**: notifications are spoken only while wired or Bluetooth headphones, such as AirPods, are connected. CarPlay doesn't count. A Bluetooth car stereo without CarPlay looks like headphones to iOS, so it does count. This needs the installed app; Expo Go can't detect headphones, so in Expo Go this mode stays quiet.
 
-Speech plays even with the silent switch on, and music keeps playing underneath. Up to three notifications are read at once; a bigger batch ends with "and 5 more notifications". Choosing a mode says a short test line when it's allowed to speak. Only notifications that arrive while the app is open are read.
+Speech plays even with the silent switch on, and music keeps playing underneath. Up to three notifications are read at once; a bigger batch ends with "and 5 more notifications". Choosing a mode says a short test line when it's allowed to speak. **Speed** is a slider from 0.5x to 2x; letting go of it plays the test line at that speed. Only notifications that arrive while the app is open are read.
 
 To preview a spot before setting up Pushover, turn on **Show sample notifications**. That shows three sample notifications.
 

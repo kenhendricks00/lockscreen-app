@@ -20,7 +20,10 @@ import type { PushNote } from '../pushover';
 import { findCity } from '../weather';
 import { AppIcon } from './NoteList';
 import { PushoverSignIn } from './PushoverSignIn';
-import { Button, Field, formStyles, Hint, Section, Segments, Toggle } from './SettingsControls';
+import { Button, Field, formStyles, Hint, Section, Segments, Slider, Toggle } from './SettingsControls';
+
+/** 1 -> "1x", 1.5 -> "1.5x", 1.25 -> "1.25x". */
+const formatRate = (rate: number) => `${Number(rate.toFixed(2))}x`;
 
 const PLACEMENTS: { value: Placement; label: string }[] = [
   { value: 'edge', label: 'Edge' },
@@ -241,7 +244,7 @@ export function SettingsSheet({ visible, onClose, hiddenNotes, onDismiss, onPrev
               value={settings.readAloudMode}
               onChange={(readAloudMode) => {
                 update({ readAloudMode });
-                previewReadAloud(readAloudMode);
+                previewReadAloud(readAloudMode, settings.speechRate);
               }}
             />
             {settings.readAloudMode === 'headphones' && (
@@ -253,6 +256,16 @@ export function SettingsSheet({ visible, onClose, hiddenNotes, onDismiss, onPrev
             )}
             {settings.readAloudMode !== 'off' && (
               <>
+                <Slider
+                  label="Speed"
+                  value={settings.speechRate}
+                  min={0.5}
+                  max={2}
+                  step={0.05}
+                  format={formatRate}
+                  onChange={(speechRate) => update({ speechRate })}
+                  onDone={(speechRate) => previewReadAloud(settings.readAloudMode, speechRate)}
+                />
                 <Text style={formStyles.label}>What’s read</Text>
                 <Segments
                   options={SPEAK_DETAIL}

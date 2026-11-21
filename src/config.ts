@@ -48,6 +48,7 @@ export const defaults = {
   placement: 'edge' as Placement,
   demoNotifications: false, // sample notifications, handy for picking a placement
   readAloudMode: 'off' as ReadAloud,
+  speechRate: 1, // voice speed for read-aloud: 1 is normal, 2 twice as fast
   noteIcon: 'app' as NoteIcon, // icon on List notifications; 'app' is the sender's own
   noteName: '', // name on List notifications; blank shows just the title
   // The app never lets the iPhone auto-lock. With alwaysBright off, it dims
