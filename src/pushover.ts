@@ -9,6 +9,9 @@ export type PushNote = {
   title: string;
   message: string;
   date: number; // unix seconds
+  received?: number; // unix seconds, when this phone downloaded it
+  app?: string; // the sending Pushover application's name
+  priority?: number; // Pushover priority, -2 (lowest) to 2 (emergency)
   icon?: string; // the sending app's Pushover icon name
   receipt?: string; // set on unacknowledged emergency-priority messages
 };
@@ -27,6 +30,13 @@ const headers = { 'User-Agent': 'LockScreen/1.0 (unofficial Pushover Open Client
 const minutesAgo = (minutes: number) => Math.floor(Date.now() / 1000) - minutes * 60;
 const SAMPLES: PushNote[] = [
   { id: 's1', title: 'Front door', message: 'A package was delivered to the porch.', date: minutesAgo(2) },
+  {
+    id: 's0',
+    title: 'Hidden sample',
+    message: 'Priority -2: only in Settings while Follow Pushover priority is on.',
+    date: minutesAgo(5),
+    priority: -2,
+  },
   { id: 's2', title: 'Build finished', message: 'The unsigned .ipa is ready to download.', date: minutesAgo(25) },
   { id: 's3', title: 'Reminder', message: 'Dentist appointment tomorrow at 10.', date: minutesAgo(130) },
 ];
@@ -106,6 +116,9 @@ const toNote = (m: RawMessage): PushNote => ({
   title: m.title || m.app,
   message: m.html ? m.message.replace(/<[^>]+>/g, '') : m.message,
   date: m.date,
+  received: Math.floor(Date.now() / 1000),
+  app: m.app,
+  priority: m.priority,
   icon: m.icon,
   receipt: m.priority >= 2 && m.acked !== 1 ? m.receipt : undefined,
 });
@@ -121,13 +134,21 @@ async function sync({ secret, deviceId }: PushoverAccount): Promise<PushNote[]> 
   return messages.map(toNote).sort((a, b) => b.date - a.date);
 }
 
+type Options = {
+  demo: boolean;
+  remember: boolean; // keep notifications in storage across restarts
+  autoHide: number; // seconds after arrival to drop a notification; 0 = never
+};
+
+const arrivedAt = (note: PushNote) => note.received ?? note.date;
+
 /**
- * Live notifications over Pushover's WebSocket, saved on the phone until
- * dismissed. `onArrive` gets each batch of newly downloaded notifications.
+ * Live notifications over Pushover's WebSocket, kept until dismissed (or
+ * auto-hidden). `onArrive` gets each batch of newly downloaded notifications.
  */
 export function usePushover(
   account: PushoverAccount | null,
-  demo: boolean,
+  { demo, remember, autoHide }: Options,
   onArrive: (fresh: PushNote[]) => void,
 ) {
   const [notes, setNotes] = useState<PushNote[]>([]);
@@ -140,16 +161,41 @@ export function usePushover(
     onArriveRef.current = onArrive;
   });
 
+  // Read once at startup; with "remember" off, nothing is restored.
+  const rememberAtStart = useRef(remember);
   useEffect(() => {
+    if (!rememberAtStart.current) return setRestored(true);
     AsyncStorage.getItem(NOTES_KEY)
       .then((json) => json && setNotes(JSON.parse(json)))
       .catch(() => {})
       .finally(() => setRestored(true));
   }, []);
 
+  // With "remember" off, the saved copy is erased and notes live in memory only.
   useEffect(() => {
-    if (restored) AsyncStorage.setItem(NOTES_KEY, JSON.stringify(notes)).catch(() => {});
-  }, [notes, restored]);
+    if (!restored) return;
+    const saving = remember
+      ? AsyncStorage.setItem(NOTES_KEY, JSON.stringify(notes))
+      : AsyncStorage.removeItem(NOTES_KEY);
+    saving.catch(() => {});
+  }, [notes, restored, remember]);
+
+  // Auto-hide: drop real notifications older than `autoHide` seconds. Emergency
+  // receipts aren't acknowledged by this; only a tap does that.
+  useEffect(() => {
+    if (!autoHide) return;
+    const prune = () => {
+      const cutoff = Date.now() / 1000 - autoHide;
+      const fresh = (list: PushNote[]) => {
+        const kept = list.filter((n) => arrivedAt(n) > cutoff);
+        return kept.length === list.length ? list : kept;
+      };
+      setNotes(fresh); // samples are left alone, so they stay previewable
+    };
+    prune();
+    const id = setInterval(prune, 15_000);
+    return () => clearInterval(id);
+  }, [autoHide]);
 
   useEffect(() => {
     if (!account || !restored) return;

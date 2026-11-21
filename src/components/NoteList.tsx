@@ -6,6 +6,7 @@ import { sans } from '../fonts';
 import { type NoteIcon, noteIcons } from '../noteIcons';
 import { iconUrl, type PushNote } from '../pushover';
 import { useSettings } from '../settings';
+import { usePeek } from '../stealth';
 
 function timeAgo(seconds: number, now: Date) {
   const minutes = Math.floor((now.getTime() / 1000 - seconds) / 60);
@@ -32,12 +33,13 @@ export function AppIcon({ icon, pushoverIcon }: { icon: NoteIcon; pushoverIcon?:
 }
 
 function Card({ note, now, onPress }: { note: PushNote; now: Date; onPress: () => void }) {
-  const { noteIcon, noteName } = useSettings().settings;
+  const { noteIcon, noteName, hideText } = useSettings().settings;
+  const { peeking, pressProps } = usePeek(onPress);
   const name = noteName.trim();
 
   // With a name set, cards use the older iOS layout: name, then title, then message.
   return (
-    <Pressable onPress={onPress} style={styles.card}>
+    <Pressable {...pressProps} style={styles.card}>
       <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
       <AppIcon icon={noteIcon} pushoverIcon={note.icon} />
       <View style={styles.body}>
@@ -52,9 +54,11 @@ function Card({ note, now, onPress }: { note: PushNote; now: Date; onPress: () =
             {note.title}
           </Text>
         )}
-        <Text style={styles.text} numberOfLines={name ? 3 : 4}>
-          {note.message}
-        </Text>
+        {(!hideText || peeking) && (
+          <Text style={styles.text} numberOfLines={name ? 3 : 4}>
+            {note.message}
+          </Text>
+        )}
       </View>
     </Pressable>
   );
